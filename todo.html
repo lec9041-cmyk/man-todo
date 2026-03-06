@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PulseHome | Focus Planner</title>
+  <title>PulseHome | 집중 플래너</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -103,6 +103,7 @@
     .btn {
       border: none; border-radius: var(--radius-sm);
       padding: 9px 14px; font-size: 13px; font-weight: 700;
+      min-height: 38px;
       cursor: pointer; transition: all .15s;
       display: inline-flex; align-items: center; gap: 6px;
     }
@@ -587,9 +588,83 @@
       .manda-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
-      .nav-tab span.tab-label { display: none; }
-      .main { padding: 12px; }
-      .chat-modal { width: 100%; }
+      .topnav {
+        padding: 0 12px;
+        min-height: 56px;
+      }
+      .logo-text { font-size: 16px; margin-right: 8px; }
+      .nav-tabs {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 60;
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(12px);
+        border-top: 1px solid var(--line);
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+        justify-content: space-between;
+        gap: 6px;
+      }
+      .nav-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 8px;
+        min-height: 44px;
+        border-radius: 12px;
+      }
+      .nav-tab .tab-icon { font-size: 16px; }
+      .nav-tab .tab-label { font-size: 12px; }
+
+      .main {
+        padding: 12px;
+        padding-bottom: calc(108px + env(safe-area-inset-bottom));
+      }
+
+      input[type="text"], input[type="date"], input[type="search"], select, textarea, button {
+        font-size: 16px;
+      }
+      .btn, .chip, .chat-send, .ai-chat-btn, .chat-close {
+        min-height: 44px;
+      }
+
+      .todo-add-card,
+      .sidebar-card,
+      .day-detail-card,
+      .focus-panel { padding: 12px; }
+      .todo-layout,
+      .routine-layout,
+      .stats-layout,
+      .sidebar,
+      .todo-list { gap: 10px; }
+      .todo-item,
+      .routine-item,
+      .manda-cell { padding: 10px; }
+
+      .modal-overlay {
+        align-items: stretch;
+        justify-content: stretch;
+        padding: 0;
+      }
+      .chat-modal {
+        width: 100%;
+        height: 100dvh;
+        border-radius: 0;
+        transform: translateY(32px);
+      }
+      .chat-messages {
+        padding: 12px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ai-chat-btn {
+        position: fixed;
+        right: 12px;
+        bottom: calc(74px + env(safe-area-inset-bottom));
+        z-index: 70;
+        margin-left: 0;
+        padding: 10px 14px;
+      }
     }
   </style>
 </head>
@@ -618,7 +693,7 @@
           <!-- Add Card -->
           <div class="card todo-add-card">
             <div class="add-row">
-              <input type="text" id="todoText" placeholder="할 일 입력 (Enter로 추가)" maxlength="140" />
+              <input type="text" id="todoText" placeholder="할 일 입력 (엔터로 추가)" maxlength="140" />
               <button class="btn btn-primary" id="addTodoBtn">+ 추가</button>
             </div>
             <div class="add-meta">
@@ -658,7 +733,7 @@
             <div class="focus-header">
               <div>
                 <div class="focus-title">⭐ 오늘의 3개</div>
-                <div class="focus-subtitle">최대 3개까지 Pin 가능 · ⭐ 버튼으로 고정</div>
+                <div class="focus-subtitle">최대 3개까지 고정 가능 · ⭐ 버튼으로 고정</div>
               </div>
               <button class="btn btn-sm btn-ghost" id="focusMoreBtn" style="display:none;"></button>
             </div>
@@ -699,7 +774,7 @@
             </div>
           </div>
           <div class="card sidebar-card">
-            <div class="sidebar-title">📅 오늘 D-Day</div>
+            <div class="sidebar-title">📅 오늘 디데이</div>
             <div id="sidebarDday"></div>
           </div>
         </div>
@@ -776,7 +851,7 @@
         </div>
         <div>
           <div class="card card-body">
-            <div class="section-title">⏱ D-Day 목록</div>
+            <div class="section-title">⏱ 디데이 목록</div>
             <div class="dday-list" id="ddayList"></div>
           </div>
         </div>
@@ -903,7 +978,7 @@ function calcDday(dateStr) {
 
 function dDayText(diff) {
   if (diff === null) return '';
-  if (diff === 0) return 'D-Day';
+  if (diff === 0) return '디데이';
   if (diff > 0) return `D-${diff}`;
   return `D+${Math.abs(diff)}`;
 }
@@ -1078,7 +1153,7 @@ function getTodos() {
   let list = [...state.todos];
   const { todoFilter, todoSort, todoSearch } = state.ui;
 
-  if (todoSearch) list = list.filter(t => t.title.toLowerCase().includes(todoSearch));
+  if (todoSearch) list = list.filter(t => String(t.title || '').toLowerCase().includes(String(todoSearch || '').toLowerCase()));
   if (todoFilter === 'active') list = list.filter(t => t.status === 'active');
   else if (todoFilter === 'done') list = list.filter(t => t.status === 'done');
   else list = list.filter(t => t.status !== 'archived');
@@ -1584,7 +1659,7 @@ function renderMandaRoot() {
           <textarea class="mc-input" placeholder="실행 아이디어 입력..." data-slot="${slot}">${esc(c.text)}</textarea>
         </div>
         <div class="mc-footer">
-          <input type="date" class="mc-due-input" value="${c.dueDate||''}" data-slot="${slot}" title="D-Day 마감일" />
+          <input type="date" class="mc-due-input" value="${c.dueDate||''}" data-slot="${slot}" title="디데이 마감일" />
           ${subTotal > 0 ? `<span class="mc-stats">${subDone}/${subTotal}</span>` : ''}
           ${hasContent ? '<span class="mc-drill-hint">탭 클릭 → 세부 ›</span>' : ''}
         </div>
@@ -1882,7 +1957,7 @@ function renderDdayList() {
   items.sort((a,b) => Math.abs(a.diff ?? 9999) - Math.abs(b.diff ?? 9999));
 
   if (items.length === 0) {
-    list.innerHTML = '<div class="text-muted">D-Day 항목이 없어요</div>';
+    list.innerHTML = '<div class="text-muted">디데이 항목이 없어요</div>';
     return;
   }
 
@@ -1903,7 +1978,7 @@ function renderDdayList() {
 document.getElementById('calPrev').addEventListener('click', () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); });
 document.getElementById('calNext').addEventListener('click', () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); });
 
-// ── Sidebar D-Day ──
+// ── Sidebar 디데이 ──
 function renderSidebarDday() {
   const el = document.getElementById('sidebarDday');
   const items = [];
