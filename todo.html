@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PulseHome Personal OS</title>
+  <title>펄스홈 포커스 플래너</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -13,7 +13,6 @@
       --line: #e5e7eb;
       --accent: #2563eb;
       --accent-soft: #dbeafe;
-      --ok: #16a34a;
       --radius: 12px;
     }
 
@@ -21,26 +20,27 @@
 
     body {
       margin: 0;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "맑은 고딕", sans-serif;
+      background: linear-gradient(180deg, #f8fafc 0%, #f3f7ff 100%);
       color: var(--text);
     }
 
     .app {
-      max-width: 640px;
+      max-width: 760px;
       margin: 0 auto;
       min-height: 100vh;
       padding: 16px;
-      padding-bottom: calc(96px + env(safe-area-inset-bottom));
+      padding-bottom: calc(150px + env(safe-area-inset-bottom));
     }
 
     .header {
       position: sticky;
       top: 0;
       z-index: 5;
-      background: rgba(248, 250, 252, 0.95);
+      background: rgba(248, 250, 252, 0.94);
       backdrop-filter: blur(8px);
       padding: 8px 0 12px;
+      border-bottom: 1px solid #eef2ff;
     }
 
     h1 {
@@ -70,7 +70,6 @@
       border-radius: 12px;
       padding: 16px;
       background: #ffffff;
-      box-shadow: none;
     }
 
     .card-title {
@@ -80,7 +79,6 @@
     }
 
     .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-
     .meta { color: var(--muted); font-size: 13px; }
 
     .progress {
@@ -98,18 +96,24 @@
       width: 0;
     }
 
-    input, select, button {
+    input, select, button, textarea {
       font: inherit;
       font-size: 16px;
       min-height: 44px;
       border-radius: 10px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
       padding: 0 12px;
       background: #fff;
+    }
+
+    textarea {
+      min-height: 80px;
+      padding: 10px 12px;
+      resize: vertical;
     }
 
     button {
@@ -175,17 +179,13 @@
       overflow: hidden;
       text-overflow: ellipsis;
       font-size: 14px;
+      max-width: 270px;
     }
 
     .tiny { font-size: 12px; color: var(--muted); }
 
     .goal-form, .routine-form { display: grid; gap: 8px; }
-
-    .goal-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+    .goal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
     .divider {
       margin: 10px 0;
@@ -200,6 +200,82 @@
       font-size: 13px;
       color: #1e293b;
       line-height: 1.5;
+    }
+
+    .date-toolbar {
+      display: grid;
+      gap: 10px;
+    }
+
+    .date-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .date-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .calendar-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .calendar-grid,
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .calendar-weekdays div {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+
+    .day-btn {
+      min-height: 56px;
+      padding: 6px 4px;
+      border-radius: 10px;
+      display: grid;
+      justify-items: center;
+      align-content: center;
+      gap: 2px;
+      font-size: 13px;
+    }
+
+    .day-btn.muted {
+      color: #94a3b8;
+      background: #f8fafc;
+    }
+
+    .day-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #1d4ed8;
+      font-weight: 700;
+    }
+
+    .day-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #60a5fa;
+    }
+
+    .day-count {
+      font-size: 10px;
+      color: #2563eb;
     }
 
     .bottom-nav {
@@ -232,77 +308,195 @@
       background: var(--accent-soft);
       font-weight: 600;
     }
+
+    .ai-float {
+      position: fixed;
+      right: 16px;
+      bottom: calc(86px + env(safe-area-inset-bottom));
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      z-index: 30;
+    }
+
+    .ai-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(15, 23, 42, 0.4);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .ai-modal.open { display: flex; }
+
+    .ai-dialog {
+      width: min(680px, 100%);
+      height: min(78vh, 760px);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px 14px 0 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      overflow: hidden;
+    }
+
+    .ai-top {
+      border-bottom: 1px solid var(--line);
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-list {
+      padding: 12px;
+      overflow: auto;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+      background: #f8fafc;
+    }
+
+    .chat-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .chat-item.user { border-color: #bfdbfe; background: #eff6ff; }
+
+    .chat-input-wrap {
+      border-top: 1px solid var(--line);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      background: #fff;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 720px) {
+      .app { padding: 14px; }
+      .ai-dialog {
+        width: 100%;
+        height: calc(100vh - 10px);
+        border-radius: 12px 12px 0 0;
+      }
+      .label { max-width: 200px; }
+    }
   </style>
 </head>
 <body>
   <main class="app">
     <header class="header">
-      <h1>PulseHome</h1>
-      <div class="subtitle">Personal Productivity OS</div>
+      <h1>펄스홈 포커스 플래너</h1>
+      <div class="subtitle">오늘의 흐름을 차분하게 쌓아가는 생산성 기록장</div>
     </header>
 
     <section class="tab-panel active" id="panel-focus">
       <div class="stack">
         <div class="card">
-          <div class="card-title">Weekly Goal</div>
+          <div class="card-title">주간 목표</div>
           <div class="row">
-            <strong id="focusWeeklyTitle">No weekly goal</strong>
+            <strong id="focusWeeklyTitle">주간 목표가 없습니다</strong>
             <span class="meta" id="focusWeeklyValue">0 / 0</span>
           </div>
           <div class="progress"><span id="focusWeeklyBar"></span></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Today</div>
+          <div class="card-title">오늘 남은 할일</div>
           <div class="row">
-            <span class="meta">Tasks remaining</span>
+            <span class="meta">진행 대기 항목</span>
             <strong id="focusTodayRemain">0</strong>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Routine</div>
+          <div class="card-title">루틴</div>
           <div class="row">
-            <span class="meta">Completion</span>
+            <span class="meta">완료율</span>
             <strong id="focusRoutineValue">0%</strong>
           </div>
           <div class="progress"><span id="focusRoutineBar"></span></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Streak</div>
+          <div class="card-title">연속 기록</div>
           <div class="row">
-            <span class="meta">Current focus streak</span>
-            <strong><span id="focusStreak">0</span> days</strong>
+            <span class="meta">집중 유지 일수</span>
+            <strong><span id="focusStreak">0</span>일</strong>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">AI Insight</div>
-          <div class="meta" id="focusInsight">Loading daily insight...</div>
+          <div class="card-title">오늘의 제안</div>
+          <div class="meta" id="focusInsight">오늘의 제안을 불러오는 중입니다</div>
         </div>
       </div>
     </section>
 
     <section class="tab-panel" id="panel-tasks">
       <div class="stack">
-        <div class="card">
-          <div class="card-title">Add Task</div>
-          <div class="goal-form">
-            <input id="taskTitle" type="text" placeholder="Task title" maxlength="120" />
-            <input id="taskDue" type="date" />
-            <button class="btn-primary" id="addTaskBtn">Add Task</button>
+        <div class="card date-toolbar">
+          <div class="date-header">
+            <div>
+              <div class="card-title" style="margin-bottom:4px;">선택한 날짜</div>
+              <strong id="selectedDateLabel">-</strong>
+            </div>
+            <div class="date-actions">
+              <button id="prevDateBtn">이전날</button>
+              <button id="todayDateBtn">오늘</button>
+              <button id="nextDateBtn">다음날</button>
+            </div>
+          </div>
+
+          <div>
+            <div class="calendar-head">
+              <button id="prevMonthBtn">이전달</button>
+              <strong id="calendarMonthLabel">-</strong>
+              <button id="nextMonthBtn">다음달</button>
+            </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Today</div>
-          <div class="list" id="todayTaskList"></div>
+          <div class="card-title">할일 추가</div>
+          <div class="goal-form">
+            <input id="taskTitle" type="text" placeholder="할일 제목" maxlength="120" />
+            <input id="taskDue" type="date" />
+            <button class="btn-primary" id="addTaskBtn">할일 추가</button>
+          </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Later</div>
-          <div class="list" id="laterTaskList"></div>
+          <div class="card-title">해당 날짜 할일</div>
+          <div class="list" id="selectedTaskList"></div>
         </div>
       </div>
     </section>
@@ -310,28 +504,28 @@
     <section class="tab-panel" id="panel-goals">
       <div class="stack">
         <div class="card">
-          <div class="card-title">Create Goal</div>
+          <div class="card-title">목표 만들기</div>
           <div class="goal-form">
-            <input id="goalTitle" type="text" placeholder="Goal title" maxlength="120" />
+            <input id="goalTitle" type="text" placeholder="목표 제목" maxlength="120" />
             <div class="goal-grid">
               <select id="goalType">
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
+                <option value="weekly">주간</option>
+                <option value="monthly">월간</option>
               </select>
               <input id="goalTarget" type="number" min="1" value="100" />
             </div>
             <input id="goalDeadline" type="date" />
-            <button class="btn-primary" id="addGoalBtn">Create Goal</button>
+            <button class="btn-primary" id="addGoalBtn">목표 추가</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Weekly Goals</div>
+          <div class="card-title">주간 목표 목록</div>
           <div class="list" id="weeklyGoalList"></div>
         </div>
 
         <div class="card">
-          <div class="card-title">Monthly Goals</div>
+          <div class="card-title">월간 목표 목록</div>
           <div class="list" id="monthlyGoalList"></div>
         </div>
       </div>
@@ -340,15 +534,15 @@
     <section class="tab-panel" id="panel-routine">
       <div class="stack">
         <div class="card">
-          <div class="card-title">Add Routine</div>
+          <div class="card-title">루틴 추가</div>
           <div class="routine-form">
-            <input id="routineTitle" type="text" placeholder="Routine title" maxlength="80" />
-            <button class="btn-primary" id="addRoutineBtn">Add Routine</button>
+            <input id="routineTitle" type="text" placeholder="루틴 제목" maxlength="80" />
+            <button class="btn-primary" id="addRoutineBtn">루틴 추가</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Routine Checklist</div>
+          <div class="card-title">오늘 루틴 점검</div>
           <div class="list" id="routineList"></div>
         </div>
       </div>
@@ -357,45 +551,83 @@
     <section class="tab-panel" id="panel-stats">
       <div class="stack">
         <div class="card">
-          <div class="card-title">Focus Score</div>
+          <div class="card-title">집중 점수</div>
           <div class="row">
-            <span class="meta">Current score</span>
+            <span class="meta">현재 점수</span>
             <strong><span id="focusScore">0</span> / 100</strong>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">Productivity Stats</div>
+          <div class="card-title">생산성 통계</div>
           <div class="stats-grid">
-            <div class="row"><span class="meta">Completed tasks</span><strong id="statCompleted">0</strong></div>
-            <div class="row"><span class="meta">Total tasks</span><strong id="statTotal">0</strong></div>
-            <div class="row"><span class="meta">Routine completion</span><strong id="statRoutineRate">0%</strong></div>
-            <div class="row"><span class="meta">Weekly goals done</span><strong id="statWeeklyGoals">0 / 0</strong></div>
+            <div class="row"><span class="meta">완료한 할일</span><strong id="statCompleted">0</strong></div>
+            <div class="row"><span class="meta">전체 할일</span><strong id="statTotal">0</strong></div>
+            <div class="row"><span class="meta">루틴 완료율</span><strong id="statRoutineRate">0%</strong></div>
+            <div class="row"><span class="meta">주간 목표 달성</span><strong id="statWeeklyGoals">0 / 0</strong></div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">AI Weekly Review</div>
-          <div class="coach" id="weeklyCoachText">No weekly review yet.</div>
+          <div class="card-title">주간 회고</div>
+          <div class="coach" id="weeklyCoachText">아직 주간 회고가 없습니다</div>
         </div>
       </div>
     </section>
   </main>
 
+  <button class="ai-float" id="openAiBtn" aria-label="인공지능 비서 열기">비서</button>
+
+  <section class="ai-modal" id="aiModal" aria-modal="true" role="dialog" aria-labelledby="aiTitle">
+    <div class="ai-dialog">
+      <div class="ai-top">
+        <strong id="aiTitle">인공지능 비서</strong>
+        <button id="closeAiBtn">닫기</button>
+      </div>
+      <div class="chat-list" id="chatList"></div>
+      <div class="chat-input-wrap">
+        <label for="chatInput" class="sr-only">질문 입력</label>
+        <textarea id="chatInput" placeholder="무엇이든 물어보세요"></textarea>
+        <button class="btn-primary" id="sendChatBtn">전송</button>
+      </div>
+    </div>
+  </section>
+
   <nav class="bottom-nav">
-    <button class="tab-btn active" data-tab="focus">Focus</button>
-    <button class="tab-btn" data-tab="tasks">Tasks</button>
-    <button class="tab-btn" data-tab="goals">Goals</button>
-    <button class="tab-btn" data-tab="routine">Routine</button>
-    <button class="tab-btn" data-tab="stats">Stats</button>
+    <button class="tab-btn active" data-tab="focus">집중</button>
+    <button class="tab-btn" data-tab="tasks">할일</button>
+    <button class="tab-btn" data-tab="goals">목표</button>
+    <button class="tab-btn" data-tab="routine">루틴</button>
+    <button class="tab-btn" data-tab="stats">통계</button>
   </nav>
 
   <script>
-    const STORAGE_KEY = 'pulsehome_personal_os_v2';
+    const STORAGE_KEY = 'pulsehome_personal_os_v3';
     const tabs = ['focus', 'tasks', 'goals', 'routine', 'stats'];
 
     function today() {
-      return new Date().toISOString().slice(0, 10);
+      return formatDate(new Date());
+    }
+
+    function formatDate(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseDate(dateText) {
+      const [y, m, d] = String(dateText).split('-').map(Number);
+      if (!y || !m || !d) return null;
+      const dt = new Date(y, m - 1, d);
+      if (formatDate(dt) !== dateText) return null;
+      return dt;
+    }
+
+    function shiftDate(dateText, diff) {
+      const base = parseDate(dateText) || parseDate(today());
+      base.setDate(base.getDate() + diff);
+      return formatDate(base);
     }
 
     function uid() {
@@ -407,10 +639,17 @@
       t.setHours(0, 0, 0, 0);
       const sunday = new Date(t);
       sunday.setDate(t.getDate() - t.getDay());
-      return sunday.toISOString().slice(0, 10);
+      return formatDate(sunday);
+    }
+
+    function normalizeDateText(value) {
+      if (!value) return null;
+      const text = String(value).slice(0, 10);
+      return parseDate(text) ? text : null;
     }
 
     function defaultState() {
+      const t = today();
       return {
         tasks: [],
         routines: [],
@@ -419,10 +658,13 @@
           dailyInsight: '',
           dailyInsightDate: '',
           weeklyReview: '',
-          weeklyReviewWeekKey: ''
+          weeklyReviewWeekKey: '',
+          chatHistory: []
         },
         ui: {
-          tab: 'focus'
+          tab: 'focus',
+          selectedDate: t,
+          calendarMonth: t.slice(0, 7)
         }
       };
     }
@@ -434,7 +676,7 @@
         type: g.type === 'monthly' ? 'monthly' : 'weekly',
         target: Math.max(1, Number(g.target) || 1),
         progress: Math.max(0, Number(g.progress) || 0),
-        deadline: g.deadline || null,
+        deadline: normalizeDateText(g.deadline),
         linkedTodos: Array.isArray(g.linkedTodos) ? g.linkedTodos.filter(Boolean) : [],
         lastResetWeekKey: g.lastResetWeekKey || weekKey(new Date()),
         createdAt: Number(g.createdAt) || Date.now()
@@ -443,7 +685,7 @@
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pulsehome_personal_os_v2');
         if (!raw) return defaultState();
         const p = JSON.parse(raw);
         const d = defaultState();
@@ -452,7 +694,7 @@
             id: t.id,
             title: String(t.title || '').trim(),
             status: t.status === 'done' ? 'done' : 'active',
-            dueDate: t.dueDate || null,
+            dueDate: normalizeDateText(t.dueDate) || today(),
             createdAt: Number(t.createdAt) || Date.now(),
             doneAt: t.doneAt || null
           })).filter(t => t.id && t.title) : [],
@@ -467,10 +709,20 @@
             dailyInsight: String(p.ai?.dailyInsight || ''),
             dailyInsightDate: String(p.ai?.dailyInsightDate || ''),
             weeklyReview: String(p.ai?.weeklyReview || ''),
-            weeklyReviewWeekKey: String(p.ai?.weeklyReviewWeekKey || '')
+            weeklyReviewWeekKey: String(p.ai?.weeklyReviewWeekKey || ''),
+            chatHistory: Array.isArray(p.ai?.chatHistory)
+              ? p.ai.chatHistory
+                .map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: String(m.text || '').trim() }))
+                .filter(m => m.text)
+                .slice(-40)
+              : []
           },
           ui: {
-            tab: tabs.includes(p.ui?.tab) ? p.ui.tab : d.ui.tab
+            tab: tabs.includes(p.ui?.tab) ? p.ui.tab : d.ui.tab,
+            selectedDate: normalizeDateText(p.ui?.selectedDate) || d.ui.selectedDate,
+            calendarMonth: /^\d{4}-\d{2}$/.test(String(p.ui?.calendarMonth || ''))
+              ? String(p.ui.calendarMonth)
+              : (normalizeDateText(p.ui?.selectedDate) || d.ui.selectedDate).slice(0, 7)
           }
         };
       } catch {
@@ -479,6 +731,10 @@
     }
 
     function saveState() {
+      state.tasks = state.tasks.map(task => ({
+        ...task,
+        dueDate: normalizeDateText(task.dueDate) || today()
+      }));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
@@ -496,19 +752,33 @@
       renderCurrentTab();
     }
 
+    function setSelectedDate(dateText) {
+      const next = normalizeDateText(dateText) || today();
+      state.ui.selectedDate = next;
+      state.ui.calendarMonth = next.slice(0, 7);
+      saveState();
+      renderTasks();
+      renderFocus();
+    }
+
     function progressPercent(v, total) {
       if (!total) return 0;
       return Math.max(0, Math.min(100, Math.round((v / total) * 100)));
     }
 
-    function getTodayTasks() {
-      const t = today();
-      return state.tasks.filter(task => task.status === 'active' && (!task.dueDate || task.dueDate <= t));
+    function getSelectedDateTasks() {
+      const d = state.ui.selectedDate;
+      return state.tasks
+        .filter(task => task.dueDate === d)
+        .sort((a, b) => {
+          if (a.status !== b.status) return a.status === 'active' ? -1 : 1;
+          return b.createdAt - a.createdAt;
+        });
     }
 
-    function getLaterTasks() {
-      const t = today();
-      return state.tasks.filter(task => task.status === 'active' && task.dueDate && task.dueDate > t);
+    function getTodayTasks() {
+      const d = today();
+      return state.tasks.filter(task => task.status === 'active' && task.dueDate === d);
     }
 
     function getDoneTasksCount() {
@@ -525,15 +795,13 @@
 
     function calcStreak() {
       let streak = 0;
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-
+      const now = parseDate(today());
       for (let i = 0; i < 365; i++) {
         const day = new Date(now);
         day.setDate(now.getDate() - i);
-        const key = day.toISOString().slice(0, 10);
+        const key = formatDate(day);
 
-        const hasTask = state.tasks.some(t => t.doneAt && new Date(t.doneAt).toISOString().slice(0, 10) === key);
+        const hasTask = state.tasks.some(t => t.doneAt && formatDate(new Date(t.doneAt)) === key);
         const hasRoutine = state.routines.some(r => !!r.doneDates[key]);
         if (hasTask || hasRoutine) streak += 1;
         else if (i > 0) break;
@@ -564,8 +832,10 @@
 
     function addTask() {
       const title = document.getElementById('taskTitle').value.trim();
-      const dueDate = document.getElementById('taskDue').value || null;
+      const dueInput = document.getElementById('taskDue').value;
+      const dueDate = normalizeDateText(dueInput) || state.ui.selectedDate || today();
       if (!title) return;
+
       state.tasks.unshift({
         id: uid(),
         title,
@@ -575,6 +845,7 @@
         doneAt: null
       });
       document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDue').value = state.ui.selectedDate;
       saveState();
       renderTasks();
       renderFocus();
@@ -599,7 +870,7 @@
       const title = document.getElementById('goalTitle').value.trim();
       const type = document.getElementById('goalType').value;
       const target = Number(document.getElementById('goalTarget').value || 0);
-      const deadline = document.getElementById('goalDeadline').value || null;
+      const deadline = normalizeDateText(document.getElementById('goalDeadline').value);
       if (!title || target < 1) return;
 
       state.goals.unshift({
@@ -671,20 +942,66 @@
         row.className = `item ${task.status === 'done' ? 'done' : ''}`;
         row.innerHTML = `
           <div class="item-left">
-            <button class="check ${task.status === 'done' ? 'checked' : ''}" data-action="toggle-task" data-id="${task.id}" aria-label="toggle task"></button>
+            <button class="check ${task.status === 'done' ? 'checked' : ''}" data-action="toggle-task" data-id="${task.id}" aria-label="할일 완료 상태 변경"></button>
             <div>
               <div class="label">${escapeHtml(task.title)}</div>
-              <div class="tiny">${task.dueDate || 'No date'}</div>
+              <div class="tiny">${task.dueDate}</div>
             </div>
           </div>
+          <div class="tiny">${task.status === 'done' ? '완료' : '진행중'}</div>
         `;
         container.appendChild(row);
       });
     }
 
+    function taskCountByDate() {
+      const map = {};
+      state.tasks.forEach(task => {
+        const key = normalizeDateText(task.dueDate) || today();
+        map[key] = (map[key] || 0) + 1;
+      });
+      return map;
+    }
+
+    function renderCalendar() {
+      const monthText = state.ui.calendarMonth;
+      const [y, m] = monthText.split('-').map(Number);
+      const firstDay = new Date(y, m - 1, 1);
+      const startOffset = firstDay.getDay();
+      const startDate = new Date(y, m - 1, 1 - startOffset);
+      const grid = document.getElementById('calendarGrid');
+      const counts = taskCountByDate();
+
+      document.getElementById('calendarMonthLabel').textContent = `${y}년 ${m}월`;
+      grid.innerHTML = '';
+
+      for (let i = 0; i < 42; i++) {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + i);
+        const dayKey = formatDate(day);
+        const isCurrentMonth = day.getMonth() === (m - 1);
+        const isSelected = dayKey === state.ui.selectedDate;
+        const count = counts[dayKey] || 0;
+
+        const btn = document.createElement('button');
+        btn.className = `day-btn ${isCurrentMonth ? '' : 'muted'} ${isSelected ? 'selected' : ''}`;
+        btn.type = 'button';
+        btn.dataset.action = 'select-date';
+        btn.dataset.date = dayKey;
+        btn.innerHTML = `<span>${day.getDate()}</span>${count > 0 ? `<span class="day-dot"></span><span class="day-count">${count}개</span>` : '<span class="day-count">&nbsp;</span>'}`;
+        grid.appendChild(btn);
+      }
+    }
+
     function renderTasks() {
-      renderTaskList(document.getElementById('todayTaskList'), getTodayTasks(), 'No tasks for today.');
-      renderTaskList(document.getElementById('laterTaskList'), getLaterTasks(), 'No later tasks.');
+      document.getElementById('selectedDateLabel').textContent = state.ui.selectedDate;
+      document.getElementById('taskDue').value = state.ui.selectedDate;
+      renderCalendar();
+      renderTaskList(
+        document.getElementById('selectedTaskList'),
+        getSelectedDateTasks(),
+        '선택한 날짜의 할일이 없습니다'
+      );
     }
 
     function renderGoalGroup(container, goals) {
@@ -692,7 +1009,7 @@
       if (!goals.length) {
         const div = document.createElement('div');
         div.className = 'meta';
-        div.textContent = 'No goals.';
+        div.textContent = '등록된 목표가 없습니다';
         container.appendChild(div);
         return;
       }
@@ -708,14 +1025,14 @@
             <span class="tiny">${goal.progress} / ${goal.target}</span>
           </div>
           <div class="progress"><span style="width:${p}%"></span></div>
-          <div class="tiny" style="margin-top:6px;">${goal.deadline || 'No deadline'}</div>
+          <div class="tiny" style="margin-top:6px;">${goal.deadline || '마감일 없음'}</div>
           <div class="divider"></div>
           <div class="inline">
             <select id="goal-task-${goal.id}">
-              <option value="">Link task</option>
+              <option value="">할일 연결</option>
               ${state.tasks.filter(t => t.status !== 'done').map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('')}
             </select>
-            <button data-action="link-goal" data-id="${goal.id}">Link</button>
+            <button data-action="link-goal" data-id="${goal.id}">연결</button>
           </div>
         `;
         container.appendChild(card);
@@ -734,7 +1051,7 @@
       const list = document.getElementById('routineList');
       list.innerHTML = '';
       if (!state.routines.length) {
-        list.innerHTML = '<div class="meta">No routines yet.</div>';
+        list.innerHTML = '<div class="meta">루틴이 아직 없습니다</div>';
         return;
       }
       const d = today();
@@ -744,7 +1061,7 @@
         row.className = 'item';
         row.innerHTML = `
           <div class="item-left">
-            <button class="check ${done ? 'checked' : ''}" data-action="toggle-routine" data-id="${r.id}" aria-label="toggle routine"></button>
+            <button class="check ${done ? 'checked' : ''}" data-action="toggle-routine" data-id="${r.id}" aria-label="루틴 완료 상태 변경"></button>
             <div class="label">${escapeHtml(r.title)}</div>
           </div>
         `;
@@ -759,7 +1076,7 @@
       const weeklyBar = document.getElementById('focusWeeklyBar');
 
       if (!weekly) {
-        weeklyTitle.textContent = 'No weekly goal';
+        weeklyTitle.textContent = '주간 목표가 없습니다';
         weeklyValue.textContent = '0 / 0';
         weeklyBar.style.width = '0%';
       } else {
@@ -776,7 +1093,7 @@
       document.getElementById('focusRoutineBar').style.width = `${routineRate}%`;
 
       document.getElementById('focusStreak').textContent = String(calcStreak());
-      document.getElementById('focusInsight').textContent = state.ai.dailyInsight || 'No insight yet.';
+      document.getElementById('focusInsight').textContent = state.ai.dailyInsight || '아직 오늘의 제안이 없습니다';
     }
 
     function calcFocusScore() {
@@ -810,7 +1127,64 @@
       document.getElementById('statTotal').textContent = String(stats.totalTodos);
       document.getElementById('statRoutineRate').textContent = `${stats.routineCompletionRate}%`;
       document.getElementById('statWeeklyGoals').textContent = `${stats.weeklyGoalsCompleted} / ${stats.weeklyGoalsTotal}`;
-      document.getElementById('weeklyCoachText').textContent = state.ai.weeklyReview || 'No weekly review yet.';
+      document.getElementById('weeklyCoachText').textContent = state.ai.weeklyReview || '아직 주간 회고가 없습니다';
+    }
+
+    function renderChat() {
+      const list = document.getElementById('chatList');
+      list.innerHTML = '';
+
+      if (!state.ai.chatHistory.length) {
+        const empty = document.createElement('div');
+        empty.className = 'meta';
+        empty.textContent = '질문을 보내면 인공지능 비서가 답변을 드립니다';
+        list.appendChild(empty);
+        return;
+      }
+
+      state.ai.chatHistory.forEach(message => {
+        const item = document.createElement('div');
+        item.className = `chat-item ${message.role === 'assistant' ? '' : 'user'}`;
+        item.textContent = `${message.role === 'assistant' ? '비서' : '나'}: ${message.text}`;
+        list.appendChild(item);
+      });
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      state.ai.chatHistory.push({ role: 'user', text });
+      state.ai.chatHistory = state.ai.chatHistory.slice(-40);
+      input.value = '';
+      renderChat();
+      saveState();
+
+      try {
+        const response = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'chat',
+            payload: {
+              message: `다음 질문에 한국어로 간결하게 답변해 주세요. 질문: ${text}`,
+              history: state.ai.chatHistory.slice(-20).map(msg => ({ role: msg.role, content: msg.text }))
+            }
+          })
+        });
+
+        const data = await response.json();
+        const reply = String(data.reply || '현재 답변을 준비하지 못했습니다. 잠시 후 다시 시도해 주세요.');
+        state.ai.chatHistory.push({ role: 'assistant', text: reply });
+      } catch {
+        state.ai.chatHistory.push({ role: 'assistant', text: '연결이 불안정하여 답변을 받지 못했습니다. 다시 시도해 주세요.' });
+      }
+
+      state.ai.chatHistory = state.ai.chatHistory.slice(-40);
+      saveState();
+      renderChat();
     }
 
     async function requestDailyInsight() {
@@ -821,30 +1195,30 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            mode: 'suggest',
+            mode: 'daily-insight',
             payload: {
-              message: 'Provide one short daily productivity suggestion for today.'
+              message: '오늘 실천할 수 있는 짧은 생산성 제안을 한국어로 1개만 작성해 주세요.'
             }
           })
         });
 
         const data = await response.json();
-        state.ai.dailyInsight = String(data.reply || 'Start one important task for 10 minutes.').slice(0, 160);
+        state.ai.dailyInsight = String(data.reply || '중요한 일 한 가지를 15분만 먼저 시작해 보세요.').slice(0, 180);
         state.ai.dailyInsightDate = today();
         saveState();
       } catch {
-        if (!state.ai.dailyInsight) state.ai.dailyInsight = 'Start one important task for 10 minutes.';
+        if (!state.ai.dailyInsight) state.ai.dailyInsight = '중요한 일 한 가지를 15분만 먼저 시작해 보세요.';
       }
     }
 
     function buildWeeklyReviewPrompt(stats) {
-      return `Create a short weekly productivity coaching review with sections:\n1. Overall evaluation\n2. Good points\n3. Improvement points\n4. Suggestions for next week\n5. Weekly MVP\n\nUse a calm, practical tone.\n\nData:\ncompletedTodos=${stats.completedTodos}\ntotalTodos=${stats.totalTodos}\nroutineCompletionRate=${stats.routineCompletionRate}\nweeklyGoalsCompleted=${stats.weeklyGoalsCompleted}\nweeklyGoalsTotal=${stats.weeklyGoalsTotal}`;
+      return `다음 데이터를 바탕으로 주간 생산성 회고를 한국어로 작성해 주세요.\n\n구성:\n1. 전체 평가\n2. 잘한 점\n3. 개선할 점\n4. 다음 주 제안\n5. 이번 주 핵심 한 가지\n\n데이터:\n완료한 할일=${stats.completedTodos}\n전체 할일=${stats.totalTodos}\n루틴 완료율=${stats.routineCompletionRate}\n완료한 주간 목표=${stats.weeklyGoalsCompleted}\n전체 주간 목표=${stats.weeklyGoalsTotal}`;
     }
 
     async function maybeRunWeeklyReview() {
       const currentWeek = weekKey(new Date());
       if (state.ai.weeklyReviewWeekKey === currentWeek) return;
-      if (new Date().getDay() === 0) return; // run after Sunday
+      if (new Date().getDay() === 0) return;
 
       const stats = buildWeeklyStats();
       try {
@@ -861,11 +1235,11 @@
         });
 
         const data = await response.json();
-        state.ai.weeklyReview = String(data.reply || 'Weekly review is not available.');
+        state.ai.weeklyReview = String(data.reply || '주간 회고를 불러오지 못했습니다.');
         state.ai.weeklyReviewWeekKey = currentWeek;
         saveState();
       } catch {
-        if (!state.ai.weeklyReview) state.ai.weeklyReview = 'Weekly review is not available.';
+        if (!state.ai.weeklyReview) state.ai.weeklyReview = '주간 회고를 불러오지 못했습니다.';
       }
     }
 
@@ -891,11 +1265,11 @@
     });
 
     document.addEventListener('click', (e) => {
-      const el = e.target.closest('[data-action]');
-      if (!el) return;
+      const actionEl = e.target.closest('[data-action]');
+      if (!actionEl) return;
 
-      const action = el.dataset.action;
-      const id = el.dataset.id;
+      const action = actionEl.dataset.action;
+      const id = actionEl.dataset.id;
 
       if (action === 'toggle-task') toggleTask(id);
       if (action === 'toggle-routine') toggleRoutine(id);
@@ -903,6 +1277,7 @@
         const select = document.getElementById(`goal-task-${id}`);
         if (select) linkTaskToGoal(id, select.value);
       }
+      if (action === 'select-date') setSelectedDate(actionEl.dataset.date);
     });
 
     document.getElementById('addTaskBtn').addEventListener('click', addTask);
@@ -910,10 +1285,48 @@
       if (e.key === 'Enter') addTask();
     });
 
+    document.getElementById('taskDue').addEventListener('change', (e) => {
+      const next = normalizeDateText(e.target.value);
+      if (next) setSelectedDate(next);
+    });
+
+    document.getElementById('todayDateBtn').addEventListener('click', () => setSelectedDate(today()));
+    document.getElementById('prevDateBtn').addEventListener('click', () => setSelectedDate(shiftDate(state.ui.selectedDate, -1)));
+    document.getElementById('nextDateBtn').addEventListener('click', () => setSelectedDate(shiftDate(state.ui.selectedDate, 1)));
+    document.getElementById('prevMonthBtn').addEventListener('click', () => {
+      const [y, m] = state.ui.calendarMonth.split('-').map(Number);
+      const prev = new Date(y, m - 2, 1);
+      state.ui.calendarMonth = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+      saveState();
+      renderCalendar();
+    });
+    document.getElementById('nextMonthBtn').addEventListener('click', () => {
+      const [y, m] = state.ui.calendarMonth.split('-').map(Number);
+      const next = new Date(y, m, 1);
+      state.ui.calendarMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+      saveState();
+      renderCalendar();
+    });
+
     document.getElementById('addGoalBtn').addEventListener('click', addGoal);
     document.getElementById('addRoutineBtn').addEventListener('click', addRoutine);
     document.getElementById('routineTitle').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addRoutine();
+    });
+
+    document.getElementById('openAiBtn').addEventListener('click', () => {
+      document.getElementById('aiModal').classList.add('open');
+      renderChat();
+    });
+    document.getElementById('closeAiBtn').addEventListener('click', () => {
+      document.getElementById('aiModal').classList.remove('open');
+    });
+    document.getElementById('sendChatBtn').addEventListener('click', sendChat);
+    document.getElementById('chatInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChat();
+      }
     });
 
     async function init() {
@@ -924,6 +1337,7 @@
       renderRoutine();
       renderFocus();
       renderStats();
+      renderChat();
       await requestDailyInsight();
       await maybeRunWeeklyReview();
       renderFocus();
