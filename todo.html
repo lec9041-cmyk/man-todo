@@ -406,6 +406,7 @@
         border-radius: 12px 12px 0 0;
       }
       .label { max-width: 200px; }
+      .mandalart-board { min-width: 300px; }
     }
   </style>
 </head>
@@ -518,6 +519,19 @@
         <div class="card">
           <div class="card-title">연간 목표</div>
           <div class="list" id="goalHierarchyList"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div class="card-title" style="margin-bottom:0;">만다라트</div>
+            <button class="btn-primary" id="addMandalartBtn">만다라트 추가</button>
+          </div>
+          <div class="mandalart-form" style="margin-bottom:10px;">
+            <input id="mandalartTitle" type="text" placeholder="상위 목표 제목" maxlength="120" />
+            <input id="mandalartDue" type="date" />
+            <textarea class="cell-input" id="mandalartCenter" placeholder="핵심 목표(가운데 칸)"></textarea>
+          </div>
+          <div class="list" id="mandalartList"></div>
         </div>
       </div>
     </section>
@@ -1022,6 +1036,81 @@
       renderStats();
     }
 
+
+    function addMandalart() {
+      const titleInput = document.getElementById('mandalartTitle').value.trim();
+      const dueDate = normalizeDateText(document.getElementById('mandalartDue').value);
+      const centerInput = document.getElementById('mandalartCenter').value.trim();
+      if (!titleInput && !centerInput) return;
+      const title = titleInput || centerInput;
+      const center = centerInput || titleInput;
+
+      const cells = Array.from({ length: 9 }).map((_, idx) => ({
+        id: uid(),
+        text: idx === 4 ? center : '',
+        linkedGoalId: '',
+        linkedTodoIds: []
+      }));
+
+      state.mandalarts.unshift({
+        id: uid(),
+        title,
+        dueDate,
+        cells,
+        collapsed: false,
+        createdAt: Date.now()
+      });
+
+      document.getElementById('mandalartTitle').value = '';
+      document.getElementById('mandalartDue').value = '';
+      document.getElementById('mandalartCenter').value = '';
+      saveState();
+      renderGoals();
+    }
+
+    function saveMandalart(id) {
+      const item = state.mandalarts.find(m => m.id === id);
+      if (!item) return;
+      const titleInput = document.getElementById(`mandalart-title-${id}`);
+      const dueInput = document.getElementById(`mandalart-due-${id}`);
+      const nextTitle = titleInput ? titleInput.value.trim() : item.title;
+      if (!nextTitle) return;
+      item.title = nextTitle;
+      item.dueDate = normalizeDateText(dueInput?.value) || null;
+
+      item.cells = item.cells.map((cell, idx) => {
+        const textEl = document.getElementById(`mandalart-cell-${id}-${idx}`);
+        const goalEl = document.getElementById(`mandalart-goal-${id}-${idx}`);
+        const todoEl = document.getElementById(`mandalart-todo-${id}-${idx}`);
+        const nextGoal = goalEl ? goalEl.value : '';
+        const nextTodo = todoEl ? todoEl.value : '';
+        return {
+          ...cell,
+          text: textEl ? textEl.value.trim() : cell.text,
+          linkedGoalId: nextGoal ? nextGoal : cell.linkedGoalId,
+          linkedTodoIds: nextTodo ? [nextTodo] : (cell.linkedTodoIds || [])
+        };
+      });
+
+      if (!item.cells[4].text) item.cells[4].text = item.title;
+      saveState();
+      renderGoals();
+    }
+
+    function removeMandalart(id) {
+      state.mandalarts = state.mandalarts.filter(m => m.id !== id);
+      saveState();
+      renderGoals();
+    }
+
+    function toggleMandalart(id) {
+      const item = state.mandalarts.find(m => m.id === id);
+      if (!item) return;
+      item.collapsed = !item.collapsed;
+      saveState();
+      renderGoals();
+    }
+
     function addRoutine() {
       const title = document.getElementById('routineTitle').value.trim();
       if (!title) return;
@@ -1418,6 +1507,9 @@
       if (action === 'toggle-task') toggleTask(id);
       if (action === 'toggle-routine') toggleRoutine(id);
       if (action === 'select-date') setSelectedDate(actionEl.dataset.date);
+      if (action === 'save-mandalart') saveMandalart(id);
+      if (action === 'delete-mandalart') removeMandalart(id);
+      if (action === 'toggle-mandalart') toggleMandalart(id);
     });
 
     document.getElementById('addTaskBtn').addEventListener('click', addTask);
