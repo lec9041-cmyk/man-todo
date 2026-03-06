@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const mode = body.mode;
   const payload = body.payload;
 
-  if (!['chat', 'suggest', 'weekly-review'].includes(mode)) {
+  if (!['chat', 'suggest'].includes(mode)) {
     return res.status(400).json({ error: 'Invalid mode' });
   }
 
@@ -46,22 +46,13 @@ function validatePayload(payload) {
   if (message.length > 4000) return { ok: false, error: 'Message is too long (max 4000 chars)' };
 
   const allowedRoles = new Set(['system', 'user', 'assistant']);
-  const rawHistory = Array.isArray(payload.history) ? payload.history : [];
-  if (rawHistory.length > 10) {
-    return { ok: false, error: 'History is too long (max 10 messages)' };
-  }
-
+  const rawHistory = Array.isArray(payload.history) ? payload.history.slice(-10) : [];
   const history = [];
+
   for (const item of rawHistory) {
-    if (!item || typeof item !== 'object') {
-      return { ok: false, error: 'Invalid history item' };
-    }
-    if (!allowedRoles.has(item.role)) {
-      return { ok: false, error: 'Invalid history role' };
-    }
-    if (typeof item.content !== 'string') {
-      return { ok: false, error: 'Invalid history content' };
-    }
+    if (!item || typeof item !== 'object') continue;
+    if (!allowedRoles.has(item.role)) continue;
+    if (typeof item.content !== 'string') continue;
     history.push({ role: item.role, content: item.content.slice(0, 2000) });
   }
 
@@ -117,7 +108,7 @@ async function callOpenAI(mode, payload) {
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || 'No response.';
+  return data.choices?.[0]?.message?.content || '응답을 받지 못했어요.';
 }
 
 async function callClaude(mode, payload) {
@@ -157,26 +148,18 @@ async function callClaude(mode, payload) {
   }
 
   const data = await response.json();
-  return data.content?.[0]?.text || 'No response.';
+  return data.content?.[0]?.text || '응답을 받지 못했어요.';
 }
 
 function buildMessages(mode, payload) {
-  const baseSystem = `You are PulseHome's productivity coach.
-Keep tone calm, encouraging, practical.
-Keep answers concise and structured.`;
+  const baseSystem = `당신은 PulseHome의 AI 플래너 어시스턴트입니다.
+사용자의 생산성과 목표 달성을 돕는 친근하고 동기부여가 되는 한국어 코치입니다.
+구체적이고 실행 가능한 짧은 답변을 주세요 (200자 이내).`;
 
   if (mode === 'suggest') {
     return {
       systemPrompt: payload.systemPrompt || baseSystem,
-      userMessage: `Give one short daily productivity suggestion:\n${payload.message}`,
-      history: payload.history
-    };
-  }
-
-  if (mode === 'weekly-review') {
-    return {
-      systemPrompt: payload.systemPrompt || `${baseSystem}\nUse sections: Overall evaluation, Good points, Improvement points, Suggestions for next week, Weekly MVP.`,
-      userMessage: payload.message,
+      userMessage: `다음 요청에 대해 실행 가능한 제안을 해주세요:\n${payload.message}`,
       history: payload.history
     };
   }
@@ -190,7 +173,7 @@ Keep answers concise and structured.`;
 
 function truncateReply(text) {
   const normalized = String(text || '').trim();
-  const maxLen = 800;
+  const maxLen = 700;
   if (normalized.length <= maxLen) return normalized;
   return `${normalized.slice(0, maxLen).trimEnd()}…`;
 }
