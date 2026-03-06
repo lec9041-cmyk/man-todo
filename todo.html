@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,95 +9,111 @@
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f0f4f8;
+      --bg: #f8fafc;
       --card: #ffffff;
-      --ink: #0f172a;
-      --ink2: #334155;
+      --text: #0f172a;
       --muted: #64748b;
-      --line: #e2e8f0;
-      --brand: #6366f1;
-      --brand-2: #818cf8;
-      --brand-soft: #eef2ff;
-      --green: #10b981;
-      --green-soft: #d1fae5;
-      --red: #ef4444;
-      --red-soft: #fee2e2;
-      --yellow: #f59e0b;
-      --yellow-soft: #fef3c7;
-      --shadow: 0 4px 24px rgba(99,102,241,0.08);
-      --shadow-lg: 0 12px 40px rgba(15,23,42,0.12);
-      --radius: 16px;
-      --radius-sm: 10px;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --ok: #16a34a;
+      --radius: 12px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
 
     body {
-      font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
-      color: var(--ink);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 640px;
+      margin: 0 auto;
       min-height: 100vh;
+      padding: 16px;
+      padding-bottom: calc(96px + env(safe-area-inset-bottom));
     }
 
-    /* ── Layout ── */
-    .shell {
-      display: grid;
-      grid-template-rows: 56px 1fr;
-      min-height: 100vh;
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(248, 250, 252, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 8px 0 12px;
     }
 
-    /* ── Top Nav ── */
-    .topnav {
-      position: sticky; top: 0; z-index: 30;
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
-      display: flex; align-items: center;
-      padding: 0 20px; gap: 8px;
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
-    .logo-text {
-      font-weight: 900; font-size: 18px;
-      background: linear-gradient(135deg, var(--brand), #a855f7);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      margin-right: 12px;
-    }
-    .nav-tabs { display: flex; gap: 2px; flex: 1; }
-    .nav-tab {
-      border: none; background: transparent;
-      padding: 8px 14px; border-radius: 8px;
-      font-size: 13px; font-weight: 600; color: var(--muted);
-      cursor: pointer; transition: all .15s;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-tab:hover { background: var(--brand-soft); color: var(--brand); }
-    .nav-tab.active { background: var(--brand-soft); color: var(--brand); }
-    .nav-tab .tab-icon { font-size: 15px; }
 
-    .ai-chat-btn {
-      margin-left: auto;
-      background: linear-gradient(135deg, var(--brand), #a855f7);
-      color: #fff; border: none; border-radius: 999px;
-      padding: 8px 16px; font-size: 13px; font-weight: 700;
-      cursor: pointer; display: flex; align-items: center; gap: 6px;
-      box-shadow: 0 4px 12px rgba(99,102,241,0.3);
-      transition: transform .15s, box-shadow .15s;
+    .subtitle {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
     }
-    .ai-chat-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(99,102,241,0.4); }
-
-    /* ── Main Content ── */
-    .main { padding: 20px; max-width: 1100px; margin: 0 auto; }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    /* ── Cards ── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    .stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
     }
-    .card-body { padding: 16px; }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: #ffffff;
+      box-shadow: none;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+    .meta { color: var(--muted); font-size: 13px; }
+
+    .progress {
+      margin-top: 10px;
+      height: 8px;
+      border-radius: 999px;
+      background: #eff6ff;
+      overflow: hidden;
+    }
+
+    .progress > span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      width: 0;
+    }
+
+    input, select, button {
+      font: inherit;
+      font-size: 16px;
+      min-height: 44px;
+      border-radius: 10px;
+    }
+
+    input, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      padding: 0 12px;
+      background: #fff;
+    }
 
     /* ── Buttons ── */
     .btn {
@@ -107,400 +123,111 @@
       cursor: pointer; transition: all .15s;
       display: inline-flex; align-items: center; gap: 6px;
     }
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--brand), #7c3aed);
-      color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,0.25);
-    }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(99,102,241,0.35); }
-    .btn-ghost { background: #f8fafc; border: 1px solid var(--line); color: var(--ink2); }
-    .btn-ghost:hover { background: var(--brand-soft); border-color: var(--brand-2); color: var(--brand); }
-    .btn-danger { background: var(--red-soft); border: 1px solid #fca5a5; color: var(--red); }
-    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
-    .btn-icon { padding: 7px; border-radius: 8px; font-size: 14px; }
-
-    /* ── Inputs ── */
-    input[type="text"], input[type="date"], input[type="search"], select, textarea {
-      border: 1px solid var(--line); border-radius: var(--radius-sm);
-      padding: 9px 12px; font-size: 13px; font-family: inherit;
-      background: #fff; color: var(--ink); width: 100%;
-      transition: border-color .15s, box-shadow .15s;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none; border-color: var(--brand-2);
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
-    }
-    textarea { resize: vertical; min-height: 72px; }
-    select { cursor: pointer; }
-
-    /* ── Tags/Chips ── */
-    .tag {
-      display: inline-flex; align-items: center;
-      border-radius: 999px; padding: 3px 9px;
-      font-size: 11px; font-weight: 700;
-      border: 1px solid var(--line); background: #f8fafc; color: var(--muted);
-    }
-    .tag.high { background: var(--red-soft); border-color: #fca5a5; color: #b91c1c; }
-    .tag.mid { background: var(--yellow-soft); border-color: #fcd34d; color: #92400e; }
-    .tag.low { background: var(--green-soft); border-color: #6ee7b7; color: #065f46; }
-    .tag.mandala { background: #ede9fe; border-color: #c4b5fd; color: #5b21b6; }
-    .tag.routine { background: #fce7f3; border-color: #f9a8d4; color: #9d174d; }
-
-    .chip {
-      border-radius: 999px; border: 1px solid var(--line);
-      background: #fff; padding: 6px 12px;
-      font-size: 12px; font-weight: 700; color: var(--muted);
-      cursor: pointer; transition: all .15s;
-    }
-    .chip:hover { border-color: var(--brand-2); color: var(--brand); }
-    .chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
-
-    /* ════════════════════════════════════
-       TODO TAB
-    ════════════════════════════════════ */
-    .todo-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
-
-    .todo-add-card { padding: 14px; margin-bottom: 14px; }
-    .add-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center; }
-    .add-meta { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; margin-top: 8px; }
-
-    .toolbar-row {
-      display: flex; gap: 8px; align-items: center;
-      flex-wrap: wrap; margin-bottom: 12px;
-    }
-    .chips-wrap { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
-
-    /* Focus Panel */
-    .focus-panel {
-      background: linear-gradient(135deg, #ede9fe, #e0f2fe);
-      border: 1px solid #c4b5fd;
-      border-radius: var(--radius);
-      padding: 14px; margin-bottom: 14px;
-    }
-    .focus-header {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 10px;
-    }
-    .focus-title { font-size: 13px; font-weight: 800; color: #4c1d95; display: flex; align-items: center; gap: 6px; }
-    .focus-subtitle { font-size: 11px; color: #6d28d9; margin-top: 2px; }
-    .focus-items { display: grid; gap: 6px; }
-    .focus-item {
-      background: rgba(255,255,255,0.8);
-      border: 1px solid rgba(196,181,253,0.5);
-      border-radius: 10px; padding: 8px 12px;
-      display: flex; justify-content: space-between;
-      align-items: center; font-size: 13px;
-    }
-    .focus-item.done-item { opacity: 0.5; }
-    .focus-item .fi-title { font-weight: 600; }
-    .focus-item .fi-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
-    .focus-empty { color: #7c3aed; font-size: 13px; opacity: 0.7; text-align: center; padding: 10px; }
-
-    /* Todo List */
-    .todo-list { display: grid; gap: 8px; }
-    .todo-empty {
-      border: 1.5px dashed var(--line); border-radius: var(--radius);
-      padding: 32px; text-align: center; color: var(--muted); font-size: 14px;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
     }
 
-    .todo-item {
-      background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius-sm); padding: 12px;
-      transition: box-shadow .15s, border-color .15s;
-    }
-    .todo-item:hover { box-shadow: var(--shadow); border-color: var(--brand-2); }
-    .todo-item.done { opacity: 0.6; }
-    .todo-item.done .ti-title { text-decoration: line-through; color: var(--muted); }
-    .todo-item.dragging { opacity: 0.4; }
-    .todo-item.drag-over { border-color: var(--brand); background: var(--brand-soft); }
-
-    .ti-main { display: flex; gap: 10px; align-items: flex-start; }
-    .ti-check {
-      width: 18px; height: 18px; border-radius: 50%;
-      border: 2px solid var(--line); appearance: none;
-      cursor: pointer; flex-shrink: 0; margin-top: 2px;
-      transition: all .15s; position: relative;
-    }
-    .ti-check:checked { background: var(--brand); border-color: var(--brand); }
-    .ti-check:checked::after {
-      content: '✓'; position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%,-50%);
-      color: #fff; font-size: 10px; font-weight: 700;
-    }
-    .ti-body { flex: 1; min-width: 0; }
-    .ti-title { font-weight: 600; font-size: 14px; margin-bottom: 5px; word-break: break-word; }
-    .ti-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
-    .ti-actions { display: flex; gap: 4px; align-items: flex-start; flex-shrink: 0; }
-
-    /* Subtasks */
-    .subtask-wrap { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-    .subtask-list { display: grid; gap: 5px; margin-bottom: 8px; }
-    .subtask-item { display: flex; gap: 8px; align-items: center; font-size: 13px; }
-    .subtask-item input[type="checkbox"] { width: 15px; height: 15px; border-radius: 4px; cursor: pointer; flex-shrink: 0; }
-    .subtask-item .st-text { flex: 1; }
-    .subtask-item.done .st-text { text-decoration: line-through; color: var(--muted); }
-    .subtask-add { display: flex; gap: 6px; }
-    .subtask-add input { font-size: 12px; padding: 6px 10px; }
-
-    /* Edit box */
-    .edit-box {
-      margin-top: 10px; padding: 10px;
-      background: #f8fafc; border: 1px solid var(--line);
-      border-radius: var(--radius-sm); display: grid; gap: 8px;
-    }
-    .edit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-
-    /* Stats bar */
-    .stats-row { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-    .progress { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
-    .progress-bar {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--brand), var(--brand-2));
-      transition: width .3s ease; border-radius: 999px;
-    }
-
-    /* Sidebar */
-    .sidebar { display: grid; gap: 14px; }
-    .sidebar-card { padding: 14px; }
-    .sidebar-title { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-
-    /* Streak */
-    .streak-display {
-      text-align: center; padding: 10px 0;
-    }
-    .streak-num { font-size: 40px; font-weight: 900; color: var(--brand); line-height: 1; }
-    .streak-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-    .streak-fire { font-size: 32px; }
-
-    /* ════════════════════════════════════
-       ROUTINE TAB
-    ════════════════════════════════════ */
-    .routine-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-    .routine-item {
-      background: var(--card); border: 1px solid var(--line);
-      border-radius: var(--radius-sm); padding: 12px;
-      display: flex; gap: 10px; align-items: flex-start;
-      transition: box-shadow .15s;
-    }
-    .routine-item:hover { box-shadow: var(--shadow); }
-    .routine-check {
-      width: 22px; height: 22px; border-radius: 6px;
-      border: 2px solid var(--line); appearance: none;
-      cursor: pointer; flex-shrink: 0; margin-top: 1px;
-      transition: all .15s; position: relative;
-    }
-    .routine-check:checked { background: var(--green); border-color: var(--green); }
-    .routine-check:checked::after {
-      content: '✓'; position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%,-50%);
-      color: #fff; font-size: 11px; font-weight: 700;
-    }
-    .routine-body { flex: 1; }
-    .routine-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
-    .routine-meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; }
-    .streak-badge {
-      display: inline-flex; align-items: center; gap: 3px;
-      background: var(--yellow-soft); border: 1px solid #fcd34d;
-      border-radius: 999px; padding: 2px 8px;
-      font-size: 11px; font-weight: 700; color: #92400e;
-    }
-
-    .freq-badge {
-      display: inline-block;
-      background: #f0f9ff; border: 1px solid #bae6fd;
-      border-radius: 999px; padding: 2px 8px;
-      font-size: 11px; font-weight: 700; color: #0369a1;
-    }
-
-    /* ════════════════════════════════════
-       MANDALART TAB
-    ════════════════════════════════════ */
-    .manda-breadcrumb {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 14px; font-size: 13px;
-    }
-    .manda-breadcrumb .bc-sep { color: var(--muted); }
-    .manda-breadcrumb .bc-link {
-      color: var(--brand); cursor: pointer; font-weight: 700;
-    }
-    .manda-breadcrumb .bc-current { font-weight: 700; }
-
-    .manda-header { margin-bottom: 16px; display: flex; gap: 10px; align-items: center; }
-    .manda-header input { flex: 1; }
-
-    .manda-grid {
+    .inline {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
     }
 
-    .manda-cell {
-      background: var(--card); border: 1.5px solid var(--line);
-      border-radius: var(--radius); padding: 14px;
-      min-height: 160px; display: grid;
-      grid-template-rows: auto auto 1fr auto;
-      gap: 8px; transition: all .2s; cursor: pointer;
-      position: relative;
-    }
-    .manda-cell:hover { border-color: var(--brand-2); box-shadow: var(--shadow); transform: translateY(-2px); }
-    .manda-cell.center {
-      background: linear-gradient(135deg, var(--brand-soft), #ede9fe);
-      border-color: var(--brand-2);
-    }
-    .manda-cell.center:hover { transform: none; cursor: default; }
-    .manda-cell.has-sub { border-color: var(--brand-2); }
-    .manda-cell.sub-level { cursor: default; }
-    .manda-cell.sub-level:hover { transform: none; }
+    .list { display: grid; gap: 8px; }
 
-    .mc-label { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
-    .mc-dday {
-      font-size: 11px; font-weight: 700;
-      display: inline-flex; align-items: center; gap: 4px;
-      border-radius: 999px; padding: 2px 8px;
-    }
-    .mc-dday.upcoming { background: var(--brand-soft); color: var(--brand); border: 1px solid var(--brand-2); }
-    .mc-dday.today { background: var(--green-soft); color: #065f46; border: 1px solid #6ee7b7; }
-    .mc-dday.overdue { background: var(--red-soft); color: var(--red); border: 1px solid #fca5a5; }
-    .mc-content { }
-    .mc-title {
-      font-weight: 700; font-size: 14px; margin-bottom: 6px;
-      word-break: break-word;
-    }
-    .mc-input {
-      width: 100%; border: 1px solid var(--line); border-radius: 8px;
-      padding: 8px; font-size: 13px; font-family: inherit;
-      resize: none; min-height: 60px; background: #fafafa;
-    }
-    .mc-input:focus { outline: none; border-color: var(--brand-2); box-shadow: 0 0 0 2px rgba(99,102,241,0.1); }
-    .mc-footer { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-    .mc-stats { font-size: 11px; color: var(--muted); }
-
-    .mc-checkbox-wrap { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
-    .mc-checkbox {
-      width: 16px; height: 16px; border-radius: 4px;
-      border: 2px solid var(--line); appearance: none;
-      cursor: pointer; flex-shrink: 0; position: relative; transition: all .15s;
-    }
-    .mc-checkbox:checked { background: var(--brand); border-color: var(--brand); }
-    .mc-checkbox:checked::after {
-      content: '✓'; position: absolute;
-      top: 50%; left: 50%; transform: translate(-50%,-50%);
-      color: #fff; font-size: 9px; font-weight: 700;
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      min-height: 44px;
+      padding: 10px 12px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
 
-    .mc-drill-hint {
-      font-size: 11px; color: var(--brand); font-weight: 700;
-      display: flex; align-items: center; gap: 4px;
+    .item.done .label {
+      color: var(--muted);
+      text-decoration: line-through;
     }
 
-    .mc-due-input {
-      font-size: 11px; padding: 3px 6px; border-radius: 6px;
-      border: 1px solid var(--line); background: #fff;
-      color: var(--ink); width: auto;
+    .item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+    .check {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: #fff;
+      display: inline-block;
+      flex-shrink: 0;
+      cursor: pointer;
     }
 
-    /* ════════════════════════════════════
-       CALENDAR TAB
-    ════════════════════════════════════ */
-    .cal-layout { display: grid; grid-template-columns: 1fr 280px; gap: 16px; }
-
-    .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-    .cal-nav { display: flex; gap: 8px; align-items: center; }
-    .cal-month { font-size: 18px; font-weight: 800; }
-    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .cal-dow {
-      text-align: center; font-size: 11px; font-weight: 800;
-      color: var(--muted); padding: 6px 0; text-transform: uppercase;
+    .check.checked {
+      border-color: var(--accent);
+      background: var(--accent);
     }
-    .cal-day {
-      min-height: 72px; border-radius: 10px;
-      border: 1px solid transparent; padding: 5px;
-      cursor: pointer; transition: all .15s;
-    }
-    .cal-day:hover { background: var(--brand-soft); border-color: var(--brand-2); }
-    .cal-day.today { border-color: var(--brand); background: var(--brand-soft); }
-    .cal-day.other-month { opacity: 0.35; }
-    .cal-day.selected { background: var(--brand); color: #fff; border-color: var(--brand); }
-    .cal-day.selected .cal-day-num { color: #fff; }
-    .cal-day-num { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
-    .cal-dots { display: flex; gap: 3px; flex-wrap: wrap; }
-    .cal-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-    }
-    .cal-dot.todo-dot { background: var(--brand); }
-    .cal-dot.dday-dot { background: var(--red); }
-    .cal-dot.routine-dot { background: var(--green); }
 
-    /* D-day sidebar */
-    .dday-list { display: grid; gap: 8px; }
-    .dday-card {
-      border-radius: var(--radius-sm); padding: 10px 12px;
-      border: 1px solid var(--line); background: #fff;
-    }
-    .dday-card.today-card { background: var(--green-soft); border-color: #6ee7b7; }
-    .dday-card.overdue-card { background: var(--red-soft); border-color: #fca5a5; }
-    .dday-num { font-size: 20px; font-weight: 900; color: var(--brand); line-height: 1; }
-    .dday-num.today-num { color: var(--green); }
-    .dday-num.overdue-num { color: var(--red); }
-    .dday-title { font-size: 13px; font-weight: 600; margin-top: 3px; }
-    .dday-source { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-    /* Day detail */
-    .day-detail-card { padding: 14px; }
-    .day-detail-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; }
-    .day-event-list { display: grid; gap: 6px; }
-    .day-event {
-      font-size: 13px; padding: 6px 10px;
-      border-radius: 8px; border-left: 3px solid var(--brand);
-      background: var(--brand-soft);
-    }
-    .day-event.done-event { opacity: 0.5; border-left-color: var(--muted); background: #f8fafc; }
-
-    /* ════════════════════════════════════
-       STATS TAB
-    ════════════════════════════════════ */
-    .stats-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .stats-full { grid-column: 1 / -1; }
-
-    .stat-num { font-size: 36px; font-weight: 900; color: var(--brand); line-height: 1; }
-    .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
-
-    .bar-chart { display: grid; gap: 8px; }
-    .bar-row { display: grid; grid-template-columns: 80px 1fr 40px; gap: 8px; align-items: center; font-size: 12px; }
-    .bar-track { height: 10px; background: var(--line); border-radius: 999px; overflow: hidden; }
-    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--brand-2)); border-radius: 999px; transition: width .4s ease; }
-    .bar-val { font-weight: 700; color: var(--brand); text-align: right; }
-
-    .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-    .hm-cell {
-      aspect-ratio: 1; border-radius: 4px;
-      background: var(--line); transition: background .15s;
-    }
-    .hm-cell.l1 { background: #c4b5fd; }
-    .hm-cell.l2 { background: #a78bfa; }
-    .hm-cell.l3 { background: #7c3aed; }
-    .hm-cell.l4 { background: #4c1d95; }
-
-    /* ════════════════════════════════════
-       AI CHAT MODAL
-    ════════════════════════════════════ */
-    .modal-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(15,23,42,0.5);
-      display: flex; align-items: flex-end; justify-content: flex-end;
-      padding: 20px;
-      opacity: 0; pointer-events: none; transition: opacity .2s;
-    }
-    .modal-overlay.open { opacity: 1; pointer-events: all; }
-
-    .chat-modal {
-      width: 400px; height: 600px;
-      background: var(--card); border-radius: 20px;
-      box-shadow: var(--shadow-lg);
-      display: flex; flex-direction: column;
-      transform: translateY(20px) scale(0.96);
-      transition: transform .25s cubic-bezier(0.34,1.56,0.64,1);
+    .label {
+      white-space: nowrap;
       overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 14px;
+    }
+
+    .tiny { font-size: 12px; color: var(--muted); }
+
+    .goal-form, .routine-form { display: grid; gap: 8px; }
+
+    .goal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .divider {
+      margin: 10px 0;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .stats-grid { display: grid; gap: 10px; }
+
+    .coach {
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: #1e293b;
+      line-height: 1.5;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10;
+      background: #ffffff;
+      border-top: 1px solid var(--line);
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .tab-btn {
+      min-height: 44px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 6px;
+      border-radius: 10px;
     }
     .modal-overlay.open .chat-modal { transform: translateY(0) scale(1); }
 
@@ -712,21 +439,16 @@
               <div></div>
             </div>
           </div>
+          <div class="progress"><span id="focusWeeklyBar"></span></div>
+        </div>
 
-          <!-- Toolbar -->
-          <div class="toolbar-row">
-            <input type="search" id="searchInput" placeholder="🔍 검색" style="width:180px;" />
-            <select id="sortInput" style="width:160px;">
-              <option value="created">최신 추가순</option>
-              <option value="due">마감일 빠른순</option>
-              <option value="priority">우선순위순</option>
-            </select>
-            <div class="chips-wrap" id="filterChips">
-              <button class="chip active" data-filter="all">전체</button>
-              <button class="chip" data-filter="active">진행중</button>
-              <button class="chip" data-filter="done">완료</button>
-            </div>
+        <div class="card">
+          <div class="card-title">Today</div>
+          <div class="row">
+            <span class="meta">Tasks remaining</span>
+            <strong id="focusTodayRemain">0</strong>
           </div>
+        </div>
 
           <!-- Focus Panel -->
           <div class="focus-panel">
@@ -739,27 +461,14 @@
             </div>
             <div class="focus-items" id="focusList"></div>
           </div>
+          <div class="progress"><span id="focusRoutineBar"></span></div>
+        </div>
 
-          <!-- Stats -->
-          <div class="stats-row" id="statsRow">총 0개 / 완료 0개 / 남음 0개</div>
-          <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-
-          <!-- Todo List -->
-          <div class="todo-list" id="todoList"></div>
-          <div class="todo-empty" id="todoEmpty" style="display:none;">아직 할 일이 없어요. 위에서 추가해보세요! 🎉</div>
-
-          <!-- Bottom -->
-          <div class="flex gap-2 mt-2 flex-wrap justify-between">
-            <div class="flex gap-2">
-              <button class="btn btn-ghost btn-sm" id="exportBtn">📤 내보내기</button>
-              <button class="btn btn-ghost btn-sm" id="importBtn">📥 가져오기</button>
-              <input type="file" id="importFile" accept=".json" style="display:none;" />
-            </div>
-            <div class="flex gap-2">
-              <button class="btn btn-ghost btn-sm" id="markAllBtn">전체 완료</button>
-              <button class="btn btn-ghost btn-sm" id="clearDoneBtn">완료 삭제</button>
-              <button class="btn btn-danger btn-sm" id="clearAllBtn">전체 삭제</button>
-            </div>
+        <div class="card">
+          <div class="card-title">Streak</div>
+          <div class="row">
+            <span class="meta">Current focus streak</span>
+            <strong><span id="focusStreak">0</span> days</strong>
           </div>
         </div>
 
@@ -779,74 +488,46 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ══════════ ROUTINE TAB ══════════ -->
-    <div class="tab-panel" id="panel-routine">
-      <div class="card card-body" style="margin-bottom:14px;">
-        <div class="section-title">➕ 루틴 추가</div>
-        <div class="flex gap-2 flex-wrap">
-          <input type="text" id="routineText" placeholder="루틴 이름" style="flex:1;" maxlength="80" />
-          <select id="routineFreq" style="width:120px;">
-            <option value="daily">매일</option>
-            <option value="weekly">매주</option>
-            <option value="monthly">매월</option>
-          </select>
-          <select id="routineCat" style="width:120px;">
-            <option value="general">📂 일반</option>
-            <option value="study">📚 공부</option>
-            <option value="work">💼 업무</option>
-            <option value="health">🏃 건강</option>
-          </select>
-          <button class="btn btn-primary" id="addRoutineBtn">추가</button>
-        </div>
-      </div>
-
-      <div class="routine-layout">
-        <div>
-          <div class="section-title">📋 오늘의 루틴</div>
-          <div id="routineTodayList" class="flex" style="flex-direction:column;gap:8px;"></div>
-          <div id="routineTodayEmpty" class="todo-empty" style="display:none;">오늘 할 루틴이 없어요.</div>
-        </div>
-        <div>
-          <div class="section-title">🗂 전체 루틴 관리</div>
-          <div id="routineAllList" class="flex" style="flex-direction:column;gap:8px;"></div>
-          <div id="routineAllEmpty" class="todo-empty" style="display:none;">루틴을 추가해보세요!</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══════════ MANDALART TAB ══════════ -->
-    <div class="tab-panel" id="panel-mandalart">
-      <div class="manda-breadcrumb" id="mandaBreadcrumb">
-        <span class="bc-current">🎯 만다라트</span>
-      </div>
-      <div class="manda-header" id="mandaHeader">
-        <input type="text" id="mandaCoreInput" placeholder="중심 목표 입력 (예: 3개월 안에 취업 포트폴리오 완성)" maxlength="120" />
-        <button class="btn btn-primary" id="mandaSaveCore">저장</button>
-        <button class="btn btn-danger btn-sm" id="mandaClear">초기화</button>
-      </div>
-      <div class="manda-grid" id="mandaGrid"></div>
-      <div class="flex gap-2 mt-2">
-        <button class="btn btn-ghost btn-sm" id="mandaAddAllBtn">📋 8개 모두 할일 추가</button>
-      </div>
-    </div>
-
-    <!-- ══════════ CALENDAR TAB ══════════ -->
-    <div class="tab-panel" id="panel-calendar">
-      <div class="cal-layout">
-        <div>
-          <div class="card card-body">
-            <div class="cal-header">
-              <button class="btn btn-ghost btn-sm" id="calPrev">‹</button>
-              <div class="cal-month" id="calMonthLabel"></div>
-              <button class="btn btn-ghost btn-sm" id="calNext">›</button>
-            </div>
-            <div class="cal-grid" id="calGrid"></div>
+    <section class="tab-panel" id="panel-tasks">
+      <div class="stack">
+        <div class="card">
+          <div class="card-title">Add Task</div>
+          <div class="goal-form">
+            <input id="taskTitle" type="text" placeholder="Task title" maxlength="120" />
+            <input id="taskDue" type="date" />
+            <button class="btn-primary" id="addTaskBtn">Add Task</button>
           </div>
-          <div class="card day-detail-card mt-2" id="dayDetail" style="display:none;">
-            <div class="day-detail-title" id="dayDetailTitle"></div>
-            <div class="day-event-list" id="dayEventList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Today</div>
+          <div class="list" id="todayTaskList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Later</div>
+          <div class="list" id="laterTaskList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-goals">
+      <div class="stack">
+        <div class="card">
+          <div class="card-title">Create Goal</div>
+          <div class="goal-form">
+            <input id="goalTitle" type="text" placeholder="Goal title" maxlength="120" />
+            <div class="goal-grid">
+              <select id="goalType">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <input id="goalTarget" type="number" min="1" value="100" />
+            </div>
+            <input id="goalDeadline" type="date" />
+            <button class="btn-primary" id="addGoalBtn">Create Goal</button>
           </div>
         </div>
         <div>
@@ -856,66 +537,48 @@
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ══════════ STATS TAB ══════════ -->
-    <div class="tab-panel" id="panel-stats">
-      <div class="stats-layout">
-        <div class="card card-body">
-          <div class="sidebar-title">이번 주 달성률</div>
-          <div class="stat-num" id="weeklyRate">0%</div>
-          <div class="stat-label">완료한 할일</div>
-          <div class="divider"></div>
-          <div class="bar-chart" id="weeklyChart"></div>
-        </div>
-        <div class="card card-body">
-          <div class="sidebar-title">이번 달 달성률</div>
-          <div class="stat-num" id="monthlyRate">0%</div>
-          <div class="stat-label">이번 달 완료</div>
-          <div class="divider"></div>
-          <div class="bar-chart" id="categoryChart"></div>
-        </div>
-        <div class="card card-body stats-full">
-          <div class="sidebar-title">최근 28일 활동</div>
-          <div class="heatmap" id="heatmap"></div>
-          <div class="flex gap-1 mt-1 items-center text-muted" style="font-size:11px;">
-            <span>적음</span>
-            <div class="hm-cell" style="width:12px;height:12px;"></div>
-            <div class="hm-cell l1" style="width:12px;height:12px;"></div>
-            <div class="hm-cell l2" style="width:12px;height:12px;"></div>
-            <div class="hm-cell l3" style="width:12px;height:12px;"></div>
-            <div class="hm-cell l4" style="width:12px;height:12px;"></div>
-            <span>많음</span>
+    <section class="tab-panel" id="panel-routine">
+      <div class="stack">
+        <div class="card">
+          <div class="card-title">Add Routine</div>
+          <div class="routine-form">
+            <input id="routineTitle" type="text" placeholder="Routine title" maxlength="80" />
+            <button class="btn-primary" id="addRoutineBtn">Add Routine</button>
           </div>
         </div>
-        <div class="card card-body">
-          <div class="sidebar-title">🔥 스트릭</div>
-          <div class="streak-display">
-            <div class="streak-fire">🔥</div>
-            <div class="streak-num" id="statsStreakNum">0</div>
-            <div class="streak-label">일 연속 달성</div>
+
+        <div class="card">
+          <div class="card-title">Routine Checklist</div>
+          <div class="list" id="routineList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-stats">
+      <div class="stack">
+        <div class="card">
+          <div class="card-title">Focus Score</div>
+          <div class="row">
+            <span class="meta">Current score</span>
+            <strong><span id="focusScore">0</span> / 100</strong>
           </div>
         </div>
-        <div class="card card-body">
-          <div class="sidebar-title">📦 전체 현황</div>
-          <div style="display:grid;gap:8px;margin-top:4px;">
-            <div class="flex justify-between items-center">
-              <span class="text-muted">전체 할일</span>
-              <span style="font-weight:800;" id="statTotal">0</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-muted">완료</span>
-              <span style="font-weight:800;color:var(--green);" id="statDone">0</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-muted">진행중</span>
-              <span style="font-weight:800;color:var(--brand);" id="statActive">0</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-muted">루틴</span>
-              <span style="font-weight:800;" id="statRoutines">0</span>
-            </div>
+
+        <div class="card">
+          <div class="card-title">Productivity Stats</div>
+          <div class="stats-grid">
+            <div class="row"><span class="meta">Completed tasks</span><strong id="statCompleted">0</strong></div>
+            <div class="row"><span class="meta">Total tasks</span><strong id="statTotal">0</strong></div>
+            <div class="row"><span class="meta">Routine completion</span><strong id="statRoutineRate">0%</strong></div>
+            <div class="row"><span class="meta">Weekly goals done</span><strong id="statWeeklyGoals">0 / 0</strong></div>
           </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">AI Weekly Review</div>
+          <div class="coach" id="weeklyCoachText">No weekly review yet.</div>
         </div>
       </div>
     </div>
@@ -1082,19 +745,17 @@ function normalizeMandala(m) {
     cells: Array(8).fill(null).map((_, i) => {
       const c = m.cells?.[i] || {};
       return {
-        text: c.text || '',
-        dueDate: c.dueDate || null,
-        sub: {
-          core: c.sub?.core || '',
-          cells: Array(8).fill(null).map((_, j) => {
-            const sc = c.sub?.cells?.[j] || {};
-            return {
-              text: sc.text || '',
-              dueDate: sc.dueDate || null,
-              linkedTodoId: sc.linkedTodoId || null,
-              checked: Boolean(sc.checked)
-            };
-          })
+        tasks: [],
+        routines: [],
+        goals: [],
+        ai: {
+          dailyInsight: '',
+          dailyInsightDate: '',
+          weeklyReview: '',
+          weeklyReviewWeekKey: ''
+        },
+        ui: {
+          tab: 'focus'
         }
       };
     })
@@ -1665,288 +1326,481 @@ function renderMandaRoot() {
         </div>
       `;
 
-      const textarea = cell.querySelector('textarea');
-      textarea.addEventListener('input', e => {
-        state.mandala.cells[slot].text = e.target.value;
-        saveState();
-      });
-      textarea.addEventListener('click', e => e.stopPropagation());
-
-      const dueInput = cell.querySelector('.mc-due-input');
-      dueInput.addEventListener('change', e => {
-        state.mandala.cells[slot].dueDate = e.target.value || null;
-        saveState(); renderSidebarDday(); renderCalendar();
-      });
-      dueInput.addEventListener('click', e => e.stopPropagation());
-
-      cell.addEventListener('click', () => {
-        if (c.text.trim()) {
-          mandaLevel = 1; mandaCellIdx = slot;
-          renderMandalart();
-        }
-      });
+    function normalizeGoal(g) {
+      return {
+        id: g.id,
+        title: String(g.title || '').trim(),
+        type: g.type === 'monthly' ? 'monthly' : 'weekly',
+        target: Math.max(1, Number(g.target) || 1),
+        progress: Math.max(0, Number(g.progress) || 0),
+        deadline: g.deadline || null,
+        linkedTodos: Array.isArray(g.linkedTodos) ? g.linkedTodos.filter(Boolean) : [],
+        lastResetWeekKey: g.lastResetWeekKey || weekKey(new Date()),
+        createdAt: Number(g.createdAt) || Date.now()
+      };
     }
-    grid.appendChild(cell);
-  });
-}
 
-function renderMandaSub(cellIdx) {
-  renderMandaBreadcrumb();
-  const grid = document.getElementById('mandaGrid');
-  grid.innerHTML = '';
-  document.getElementById('mandaHeader').style.display = 'none';
-
-  const parentCell = state.mandala.cells[cellIdx];
-  const slots = [0,1,2,3,'core',4,5,6,7];
-
-  slots.forEach(slot => {
-    const cell = document.createElement('div');
-    if (slot === 'core') {
-      cell.className = 'manda-cell center';
-      cell.innerHTML = `
-        <div class="mc-label">상위 목표</div>
-        <div></div>
-        <div class="mc-content"><div class="mc-title">${esc(parentCell.text)}</div></div>
-        <div></div>
-      `;
-    } else {
-      const sc = parentCell.sub.cells[slot];
-      const linkedTodo = sc.linkedTodoId ? state.todos.find(t => t.id === sc.linkedTodoId) : null;
-      const isChecked = sc.checked || (linkedTodo?.status === 'done');
-      const diff = calcDday(sc.dueDate);
-      const ddayClass = diff === null ? '' : diff < 0 ? 'overdue' : diff === 0 ? 'today' : 'upcoming';
-
-      cell.className = 'manda-cell sub-level';
-      cell.innerHTML = `
-        <div class="mc-label">세부 ${slot+1}</div>
-        <div>${diff !== null ? `<span class="mc-dday ${ddayClass}">${dDayText(diff)}</span>` : ''}</div>
-        <div class="mc-content">
-          <textarea class="mc-input" placeholder="세부 실행 항목 입력..." data-slot="${slot}" data-cellidx="${cellIdx}">${esc(sc.text)}</textarea>
-        </div>
-        <div class="mc-footer">
-          <label class="mc-checkbox-wrap">
-            <input type="checkbox" class="mc-checkbox" ${isChecked ? 'checked' : ''} data-slot="${slot}" data-cellidx="${cellIdx}" />
-            <span style="font-size:11px;color:var(--muted);">할일 연동</span>
-          </label>
-          <input type="date" class="mc-due-input" value="${sc.dueDate||''}" data-slot="${slot}" data-cellidx="${cellIdx}" />
-        </div>
-      `;
-
-      const textarea = cell.querySelector('textarea');
-      textarea.addEventListener('input', e => {
-        state.mandala.cells[cellIdx].sub.cells[slot].text = e.target.value;
-        saveState();
-      });
-
-      const checkbox = cell.querySelector('.mc-checkbox');
-      checkbox.addEventListener('change', e => {
-        handleSubCellCheck(cellIdx, slot, e.target.checked);
-      });
-
-      const dueInput = cell.querySelector('.mc-due-input');
-      dueInput.addEventListener('change', e => {
-        state.mandala.cells[cellIdx].sub.cells[slot].dueDate = e.target.value || null;
-        // sync to linked todo dueDate
-        if (sc.linkedTodoId) {
-          const t = state.todos.find(t => t.id === sc.linkedTodoId);
-          if (t) t.dueDate = e.target.value || null;
-        }
-        saveState(); renderSidebarDday();
-      });
-    }
-    grid.appendChild(cell);
-  });
-}
-
-function handleSubCellCheck(cellIdx, slot, checked) {
-  const sc = state.mandala.cells[cellIdx].sub.cells[slot];
-  sc.checked = checked;
-  if (checked) {
-    // Create todo if not exists
-    if (!sc.linkedTodoId || !state.todos.find(t => t.id === sc.linkedTodoId)) {
-      if (sc.text.trim()) {
-        const newTodo = {
-          id: uid(), title: sc.text.trim(), type: 'todo', status: 'active',
-          dueDate: sc.dueDate || null,
-          priority: 'mid', category: 'mandala',
-          isPinnedToday: false, subtasks: [], source: 'mandalart',
-          parentId: null,
-          linkedMandalaId: `${cellIdx}-${slot}`,
-          createdAt: Date.now(), doneAt: null
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const p = JSON.parse(raw);
+        const d = defaultState();
+        return {
+          tasks: Array.isArray(p.tasks) ? p.tasks.map(t => ({
+            id: t.id,
+            title: String(t.title || '').trim(),
+            status: t.status === 'done' ? 'done' : 'active',
+            dueDate: t.dueDate || null,
+            createdAt: Number(t.createdAt) || Date.now(),
+            doneAt: t.doneAt || null
+          })).filter(t => t.id && t.title) : [],
+          routines: Array.isArray(p.routines) ? p.routines.map(r => ({
+            id: r.id,
+            title: String(r.title || '').trim(),
+            doneDates: r.doneDates && typeof r.doneDates === 'object' ? r.doneDates : {},
+            createdAt: Number(r.createdAt) || Date.now()
+          })).filter(r => r.id && r.title) : [],
+          goals: Array.isArray(p.goals) ? p.goals.map(normalizeGoal).filter(g => g.id && g.title) : [],
+          ai: {
+            dailyInsight: String(p.ai?.dailyInsight || ''),
+            dailyInsightDate: String(p.ai?.dailyInsightDate || ''),
+            weeklyReview: String(p.ai?.weeklyReview || ''),
+            weeklyReviewWeekKey: String(p.ai?.weeklyReviewWeekKey || '')
+          },
+          ui: {
+            tab: tabs.includes(p.ui?.tab) ? p.ui.tab : d.ui.tab
+          }
         };
-        state.todos.unshift(newTodo);
-        sc.linkedTodoId = newTodo.id;
-        showToast('할일이 추가되었어요! ✅', 'success');
+      } catch {
+        return defaultState();
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    const state = loadState();
+
+    function setTab(tab) {
+      state.ui.tab = tab;
+      saveState();
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tab);
+      });
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `panel-${tab}`);
+      });
+      renderCurrentTab();
+    }
+
+    function progressPercent(v, total) {
+      if (!total) return 0;
+      return Math.max(0, Math.min(100, Math.round((v / total) * 100)));
+    }
+
+    function getTodayTasks() {
+      const t = today();
+      return state.tasks.filter(task => task.status === 'active' && (!task.dueDate || task.dueDate <= t));
+    }
+
+    function getLaterTasks() {
+      const t = today();
+      return state.tasks.filter(task => task.status === 'active' && task.dueDate && task.dueDate > t);
+    }
+
+    function getDoneTasksCount() {
+      return state.tasks.filter(t => t.status === 'done').length;
+    }
+
+    function calcRoutineRateToday() {
+      const total = state.routines.length;
+      if (!total) return 0;
+      const d = today();
+      const done = state.routines.filter(r => !!r.doneDates[d]).length;
+      return Math.round((done / total) * 100);
+    }
+
+    function calcStreak() {
+      let streak = 0;
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 365; i++) {
+        const day = new Date(now);
+        day.setDate(now.getDate() - i);
+        const key = day.toISOString().slice(0, 10);
+
+        const hasTask = state.tasks.some(t => t.doneAt && new Date(t.doneAt).toISOString().slice(0, 10) === key);
+        const hasRoutine = state.routines.some(r => !!r.doneDates[key]);
+        if (hasTask || hasRoutine) streak += 1;
+        else if (i > 0) break;
+      }
+      return streak;
+    }
+
+    function resetWeeklyGoalsIfNeeded() {
+      const currentWeek = weekKey(new Date());
+      let changed = false;
+      state.goals.forEach(goal => {
+        if (goal.type === 'weekly' && goal.lastResetWeekKey !== currentWeek) {
+          goal.progress = 0;
+          goal.lastResetWeekKey = currentWeek;
+          changed = true;
+        }
+      });
+      if (changed) saveState();
+    }
+
+    function refreshGoalProgressForTask(taskId) {
+      state.goals.forEach(goal => {
+        if (!goal.linkedTodos.includes(taskId)) return;
+        const doneCount = goal.linkedTodos.filter(id => state.tasks.some(t => t.id === id && t.status === 'done')).length;
+        goal.progress = Math.min(goal.target, doneCount);
+      });
+    }
+
+    function addTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      const dueDate = document.getElementById('taskDue').value || null;
+      if (!title) return;
+      state.tasks.unshift({
+        id: uid(),
+        title,
+        status: 'active',
+        dueDate,
+        createdAt: Date.now(),
+        doneAt: null
+      });
+      document.getElementById('taskTitle').value = '';
+      saveState();
+      renderTasks();
+      renderFocus();
+      renderStats();
+      renderGoals();
+    }
+
+    function toggleTask(taskId) {
+      const task = state.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      task.status = task.status === 'done' ? 'active' : 'done';
+      task.doneAt = task.status === 'done' ? Date.now() : null;
+      refreshGoalProgressForTask(taskId);
+      saveState();
+      renderTasks();
+      renderGoals();
+      renderFocus();
+      renderStats();
+    }
+
+    function addGoal() {
+      const title = document.getElementById('goalTitle').value.trim();
+      const type = document.getElementById('goalType').value;
+      const target = Number(document.getElementById('goalTarget').value || 0);
+      const deadline = document.getElementById('goalDeadline').value || null;
+      if (!title || target < 1) return;
+
+      state.goals.unshift({
+        id: uid(),
+        title,
+        type: type === 'monthly' ? 'monthly' : 'weekly',
+        target,
+        progress: 0,
+        deadline,
+        linkedTodos: [],
+        lastResetWeekKey: weekKey(new Date()),
+        createdAt: Date.now()
+      });
+
+      document.getElementById('goalTitle').value = '';
+      document.getElementById('goalTarget').value = '100';
+      saveState();
+      renderGoals();
+      renderFocus();
+      renderStats();
+    }
+
+    function linkTaskToGoal(goalId, taskId) {
+      const goal = state.goals.find(g => g.id === goalId);
+      if (!goal || !taskId) return;
+      if (!goal.linkedTodos.includes(taskId)) goal.linkedTodos.push(taskId);
+      refreshGoalProgressForTask(taskId);
+      saveState();
+      renderGoals();
+      renderFocus();
+      renderStats();
+    }
+
+    function addRoutine() {
+      const title = document.getElementById('routineTitle').value.trim();
+      if (!title) return;
+      state.routines.unshift({ id: uid(), title, doneDates: {}, createdAt: Date.now() });
+      document.getElementById('routineTitle').value = '';
+      saveState();
+      renderRoutine();
+      renderFocus();
+      renderStats();
+    }
+
+    function toggleRoutine(routineId) {
+      const r = state.routines.find(x => x.id === routineId);
+      if (!r) return;
+      const d = today();
+      if (r.doneDates[d]) delete r.doneDates[d];
+      else r.doneDates[d] = true;
+      saveState();
+      renderRoutine();
+      renderFocus();
+      renderStats();
+    }
+
+    function renderTaskList(container, items, emptyText) {
+      container.innerHTML = '';
+      if (!items.length) {
+        const div = document.createElement('div');
+        div.className = 'meta';
+        div.textContent = emptyText;
+        container.appendChild(div);
+        return;
+      }
+
+      items.forEach(task => {
+        const row = document.createElement('div');
+        row.className = `item ${task.status === 'done' ? 'done' : ''}`;
+        row.innerHTML = `
+          <div class="item-left">
+            <button class="check ${task.status === 'done' ? 'checked' : ''}" data-action="toggle-task" data-id="${task.id}" aria-label="toggle task"></button>
+            <div>
+              <div class="label">${escapeHtml(task.title)}</div>
+              <div class="tiny">${task.dueDate || 'No date'}</div>
+            </div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function renderTasks() {
+      renderTaskList(document.getElementById('todayTaskList'), getTodayTasks(), 'No tasks for today.');
+      renderTaskList(document.getElementById('laterTaskList'), getLaterTasks(), 'No later tasks.');
+    }
+
+    function renderGoalGroup(container, goals) {
+      container.innerHTML = '';
+      if (!goals.length) {
+        const div = document.createElement('div');
+        div.className = 'meta';
+        div.textContent = 'No goals.';
+        container.appendChild(div);
+        return;
+      }
+
+      goals.forEach(goal => {
+        const p = progressPercent(goal.progress, goal.target);
+        const card = document.createElement('div');
+        card.className = 'item';
+        card.style.display = 'block';
+        card.innerHTML = `
+          <div class="row">
+            <strong>${escapeHtml(goal.title)}</strong>
+            <span class="tiny">${goal.progress} / ${goal.target}</span>
+          </div>
+          <div class="progress"><span style="width:${p}%"></span></div>
+          <div class="tiny" style="margin-top:6px;">${goal.deadline || 'No deadline'}</div>
+          <div class="divider"></div>
+          <div class="inline">
+            <select id="goal-task-${goal.id}">
+              <option value="">Link task</option>
+              ${state.tasks.filter(t => t.status !== 'done').map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('')}
+            </select>
+            <button data-action="link-goal" data-id="${goal.id}">Link</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderGoals() {
+      resetWeeklyGoalsIfNeeded();
+      const weekly = state.goals.filter(g => g.type === 'weekly');
+      const monthly = state.goals.filter(g => g.type === 'monthly');
+      renderGoalGroup(document.getElementById('weeklyGoalList'), weekly);
+      renderGoalGroup(document.getElementById('monthlyGoalList'), monthly);
+    }
+
+    function renderRoutine() {
+      const list = document.getElementById('routineList');
+      list.innerHTML = '';
+      if (!state.routines.length) {
+        list.innerHTML = '<div class="meta">No routines yet.</div>';
+        return;
+      }
+      const d = today();
+      state.routines.forEach(r => {
+        const done = !!r.doneDates[d];
+        const row = document.createElement('div');
+        row.className = 'item';
+        row.innerHTML = `
+          <div class="item-left">
+            <button class="check ${done ? 'checked' : ''}" data-action="toggle-routine" data-id="${r.id}" aria-label="toggle routine"></button>
+            <div class="label">${escapeHtml(r.title)}</div>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function renderFocus() {
+      const weekly = state.goals.filter(g => g.type === 'weekly').sort((a, b) => b.createdAt - a.createdAt)[0];
+      const weeklyTitle = document.getElementById('focusWeeklyTitle');
+      const weeklyValue = document.getElementById('focusWeeklyValue');
+      const weeklyBar = document.getElementById('focusWeeklyBar');
+
+      if (!weekly) {
+        weeklyTitle.textContent = 'No weekly goal';
+        weeklyValue.textContent = '0 / 0';
+        weeklyBar.style.width = '0%';
       } else {
-        showToast('먼저 세부 항목을 입력해주세요', 'warn');
-        sc.checked = false;
-        saveState(); renderMandaSub(cellIdx); return;
+        const p = progressPercent(weekly.progress, weekly.target);
+        weeklyTitle.textContent = weekly.title;
+        weeklyValue.textContent = `${weekly.progress} / ${weekly.target}`;
+        weeklyBar.style.width = `${p}%`;
+      }
+
+      document.getElementById('focusTodayRemain').textContent = String(getTodayTasks().length);
+
+      const routineRate = calcRoutineRateToday();
+      document.getElementById('focusRoutineValue').textContent = `${routineRate}%`;
+      document.getElementById('focusRoutineBar').style.width = `${routineRate}%`;
+
+      document.getElementById('focusStreak').textContent = String(calcStreak());
+      document.getElementById('focusInsight').textContent = state.ai.dailyInsight || 'No insight yet.';
+    }
+
+    function calcFocusScore() {
+      const total = state.tasks.length;
+      const done = getDoneTasksCount();
+      const taskRate = total ? Math.round((done / total) * 100) : 0;
+      const routineRate = calcRoutineRateToday();
+      return Math.round((taskRate * 0.6) + (routineRate * 0.4));
+    }
+
+    function buildWeeklyStats() {
+      const totalTodos = state.tasks.length;
+      const completedTodos = getDoneTasksCount();
+      const routineCompletionRate = calcRoutineRateToday();
+      const weeklyGoals = state.goals.filter(g => g.type === 'weekly');
+      const weeklyGoalsCompleted = weeklyGoals.filter(g => g.progress >= g.target).length;
+
+      return {
+        completedTodos,
+        totalTodos,
+        routineCompletionRate,
+        weeklyGoalsCompleted,
+        weeklyGoalsTotal: weeklyGoals.length
+      };
+    }
+
+    function renderStats() {
+      const stats = buildWeeklyStats();
+      document.getElementById('focusScore').textContent = String(calcFocusScore());
+      document.getElementById('statCompleted').textContent = String(stats.completedTodos);
+      document.getElementById('statTotal').textContent = String(stats.totalTodos);
+      document.getElementById('statRoutineRate').textContent = `${stats.routineCompletionRate}%`;
+      document.getElementById('statWeeklyGoals').textContent = `${stats.weeklyGoalsCompleted} / ${stats.weeklyGoalsTotal}`;
+      document.getElementById('weeklyCoachText').textContent = state.ai.weeklyReview || 'No weekly review yet.';
+    }
+
+    async function requestDailyInsight() {
+      if (state.ai.dailyInsightDate === today() && state.ai.dailyInsight) return;
+
+      try {
+        const response = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'suggest',
+            payload: {
+              message: 'Provide one short daily productivity suggestion for today.'
+            }
+          })
+        });
+
+        const data = await response.json();
+        state.ai.dailyInsight = String(data.reply || 'Start one important task for 10 minutes.').slice(0, 160);
+        state.ai.dailyInsightDate = today();
+        saveState();
+      } catch {
+        if (!state.ai.dailyInsight) state.ai.dailyInsight = 'Start one important task for 10 minutes.';
       }
     }
-  } else {
-    // Uncheck: don't delete todo, just set active
-    if (sc.linkedTodoId) {
-      const t = state.todos.find(t => t.id === sc.linkedTodoId);
-      if (t) t.status = 'active';
+
+    function buildWeeklyReviewPrompt(stats) {
+      return `Create a short weekly productivity coaching review with sections:\n1. Overall evaluation\n2. Good points\n3. Improvement points\n4. Suggestions for next week\n5. Weekly MVP\n\nUse a calm, practical tone.\n\nData:\ncompletedTodos=${stats.completedTodos}\ntotalTodos=${stats.totalTodos}\nroutineCompletionRate=${stats.routineCompletionRate}\nweeklyGoalsCompleted=${stats.weeklyGoalsCompleted}\nweeklyGoalsTotal=${stats.weeklyGoalsTotal}`;
     }
-  }
-  saveState(); renderTodo();
-}
 
-function syncMandalaFromTodo(todo) {
-  if (!todo.linkedMandalaId) return;
-  const [ci, si] = todo.linkedMandalaId.split('-').map(Number);
-  if (isNaN(ci) || isNaN(si)) return;
-  const sc = state.mandala.cells[ci]?.sub?.cells[si];
-  if (sc) sc.checked = todo.status === 'done';
-}
+    async function maybeRunWeeklyReview() {
+      const currentWeek = weekKey(new Date());
+      if (state.ai.weeklyReviewWeekKey === currentWeek) return;
+      if (new Date().getDay() === 0) return; // run after Sunday
 
-document.getElementById('mandaSaveCore').addEventListener('click', () => {
-  state.mandala.core = document.getElementById('mandaCoreInput').value.trim();
-  saveState(); renderMandalart();
-});
-document.getElementById('mandaCoreInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') { state.mandala.core = e.target.value.trim(); saveState(); renderMandalart(); }
-});
-document.getElementById('mandaClear').addEventListener('click', () => {
-  if (!confirm('만다라트를 초기화할까요?')) return;
-  state.mandala = defaultState().mandala;
-  mandaLevel = 0; mandaCellIdx = -1;
-  saveState(); renderMandalart();
-});
-document.getElementById('mandaAddAllBtn').addEventListener('click', () => {
-  let added = 0;
-  state.mandala.cells.forEach((c, ci) => {
-    if (c.text.trim()) {
-      const exists = state.todos.find(t => t.source === 'mandalart' && t.title === c.text.trim());
-      if (!exists) {
-        state.todos.unshift({ id: uid(), title: c.text.trim(), type: 'todo', status: 'active', dueDate: c.dueDate || null, priority: 'mid', category: 'mandala', isPinnedToday: false, subtasks: [], source: 'mandalart', parentId: null, linkedMandalaId: null, createdAt: Date.now(), doneAt: null });
-        added++;
+      const stats = buildWeeklyStats();
+      try {
+        const response = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mode: 'weekly-review',
+            payload: {
+              message: buildWeeklyReviewPrompt(stats),
+              history: []
+            }
+          })
+        });
+
+        const data = await response.json();
+        state.ai.weeklyReview = String(data.reply || 'Weekly review is not available.');
+        state.ai.weeklyReviewWeekKey = currentWeek;
+        saveState();
+      } catch {
+        if (!state.ai.weeklyReview) state.ai.weeklyReview = 'Weekly review is not available.';
       }
     }
-  });
-  if (added === 0) { showToast('추가할 내용이 없거나 이미 추가됐어요', 'info'); return; }
-  saveState(); showToast(`${added}개 할일이 추가됐어요!`, 'success'); renderAll();
-});
 
-// ══════════════════════════════════════════════
-//  CALENDAR
-// ══════════════════════════════════════════════
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let calSelectedDate = null;
-
-function renderCalendar() {
-  renderCalGrid();
-  renderDdayList();
-}
-
-function renderCalGrid() {
-  const label = document.getElementById('calMonthLabel');
-  label.textContent = `${calYear}년 ${calMonth+1}월`;
-
-  const grid = document.getElementById('calGrid');
-  grid.innerHTML = '';
-
-  const dows = ['일','월','화','수','목','금','토'];
-  dows.forEach(d => {
-    const el = document.createElement('div');
-    el.className = 'cal-dow'; el.textContent = d; grid.appendChild(el);
-  });
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
-  const todayStr = TODAY();
-
-  // Build event map
-  const eventMap = {};
-  state.todos.filter(t => t.dueDate).forEach(t => {
-    if (!eventMap[t.dueDate]) eventMap[t.dueDate] = [];
-    eventMap[t.dueDate].push({ type: 'todo', item: t });
-  });
-  state.mandala.cells.forEach(c => {
-    if (c.dueDate) {
-      if (!eventMap[c.dueDate]) eventMap[c.dueDate] = [];
-      eventMap[c.dueDate].push({ type: 'dday', item: c });
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
-    c.sub.cells.forEach(sc => {
-      if (sc.dueDate) {
-        if (!eventMap[sc.dueDate]) eventMap[sc.dueDate] = [];
-        eventMap[sc.dueDate].push({ type: 'dday', item: sc });
-      }
+
+    function renderCurrentTab() {
+      if (state.ui.tab === 'focus') renderFocus();
+      if (state.ui.tab === 'tasks') renderTasks();
+      if (state.ui.tab === 'goals') renderGoals();
+      if (state.ui.tab === 'routine') renderRoutine();
+      if (state.ui.tab === 'stats') renderStats();
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => setTab(btn.dataset.tab));
     });
-  });
-  state.routines.forEach(r => {
-    const today = TODAY();
-    if (r.completedDates[today]) {
-      if (!eventMap[today]) eventMap[today] = [];
-      eventMap[today].push({ type: 'routine', item: r });
-    }
-  });
 
-  // Prev month filler
-  for (let i = firstDay - 1; i >= 0; i--) {
-    const day = document.createElement('div');
-    day.className = 'cal-day other-month';
-    day.innerHTML = `<div class="cal-day-num">${daysInPrev - i}</div>`;
-    grid.appendChild(day);
-  }
+    document.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-action]');
+      if (!el) return;
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const events = eventMap[dateStr] || [];
-    const day = document.createElement('div');
-    day.className = `cal-day${dateStr === todayStr ? ' today' : ''}${calSelectedDate === dateStr ? ' selected' : ''}`;
-    const dots = events.map(ev => `<div class="cal-dot ${ev.type}-dot"></div>`).join('');
-    day.innerHTML = `<div class="cal-day-num">${d}</div><div class="cal-dots">${dots}</div>`;
-    day.addEventListener('click', () => { calSelectedDate = dateStr; renderCalGrid(); showDayDetail(dateStr, events); });
-    grid.appendChild(day);
-  }
+      const action = el.dataset.action;
+      const id = el.dataset.id;
 
-  // Next filler
-  const total = firstDay + daysInMonth;
-  const remaining = 7 - (total % 7 === 0 ? 7 : total % 7);
-  for (let d = 1; d <= remaining; d++) {
-    const day = document.createElement('div');
-    day.className = 'cal-day other-month';
-    day.innerHTML = `<div class="cal-day-num">${d}</div>`;
-    grid.appendChild(day);
-  }
-}
-
-function showDayDetail(dateStr, events) {
-  const detail = document.getElementById('dayDetail');
-  const title = document.getElementById('dayDetailTitle');
-  const list = document.getElementById('dayEventList');
-  detail.style.display = 'block';
-  title.textContent = `${dateStr} 일정 (${events.length}개)`;
-  list.innerHTML = '';
-  if (events.length === 0) { list.innerHTML = '<div class="text-muted">일정이 없어요</div>'; return; }
-  events.forEach(ev => {
-    const el = document.createElement('div');
-    const isDone = ev.type === 'todo' && ev.item.status === 'done';
-    el.className = `day-event${isDone ? ' done-event' : ''}`;
-    const label = ev.type === 'todo' ? `✅ ${ev.item.title}` : ev.type === 'routine' ? `🔁 ${ev.item.title}` : `🎯 ${ev.item.text || '만다라트'}`;
-    el.textContent = label;
-    list.appendChild(el);
-  });
-}
-
-function renderDdayList() {
-  const list = document.getElementById('ddayList');
-  list.innerHTML = '';
-  const items = [];
-
-  state.mandala.cells.forEach((c, ci) => {
-    if (c.dueDate && c.text) {
-      const diff = calcDday(c.dueDate);
-      items.push({ text: c.text, dueDate: c.dueDate, diff, source: '만다라트' });
-    }
-    c.sub.cells.forEach((sc, si) => {
-      if (sc.dueDate && sc.text) {
-        const diff = calcDday(sc.dueDate);
-        items.push({ text: sc.text, dueDate: sc.dueDate, diff, source: `만다라트 ${ci+1}번 세부` });
+      if (action === 'toggle-task') toggleTask(id);
+      if (action === 'toggle-routine') toggleRoutine(id);
+      if (action === 'link-goal') {
+        const select = document.getElementById(`goal-task-${id}`);
+        if (select) linkTaskToGoal(id, select.value);
       }
     });
   });
@@ -2173,52 +2027,22 @@ async function sendChat() {
         payload: { message: msg, systemPrompt: getSystemPrompt(), history: chatHistory.slice(-10) }
       })
     });
-    const data = await response.json();
-    const reply = data.reply || data.message || '죄송해요, 응답을 받지 못했어요.';
-    thinking.remove();
-    addChatMsg('assistant', reply);
-    chatHistory.push({ role: 'assistant', content: reply });
-  } catch (err) {
-    thinking.remove();
-    addChatMsg('assistant', '연결에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🙏');
-  }
 
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+    async function init() {
+      resetWeeklyGoalsIfNeeded();
+      setTab(state.ui.tab);
+      renderTasks();
+      renderGoals();
+      renderRoutine();
+      renderFocus();
+      renderStats();
+      await requestDailyInsight();
+      await maybeRunWeeklyReview();
+      renderFocus();
+      renderStats();
+    }
 
-function addChatMsg(role, text, isThinking = false) {
-  const wrap = document.createElement('div');
-  wrap.className = `chat-msg ${role}`;
-  const bubble = document.createElement('div');
-  bubble.className = `msg-bubble${isThinking ? ' msg-thinking' : ''}`;
-  bubble.textContent = text;
-  wrap.appendChild(bubble);
-  chatMessages.appendChild(wrap);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-  return wrap;
-}
-
-document.getElementById('chatSend').addEventListener('click', sendChat);
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
-
-// ══════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════
-initRouter();
-renderSidebarDday();
-renderStreakSidebar();
-
-// In-app notification: check overdue todos
-(function checkNotifications() {
-  const overdue = state.todos.filter(t => t.status === 'active' && t.dueDate && calcDday(t.dueDate) < 0);
-  if (overdue.length > 0) {
-    setTimeout(() => showToast(`⚠️ 마감 지난 할일이 ${overdue.length}개 있어요!`, 'warn'), 1000);
-  }
-  const dueToday = state.todos.filter(t => t.status === 'active' && t.dueDate && calcDday(t.dueDate) === 0);
-  if (dueToday.length > 0) {
-    setTimeout(() => showToast(`📅 오늘 마감인 할일이 ${dueToday.length}개예요!`, 'info'), 1800);
-  }
-})();
-</script>
+    init();
+  </script>
 </body>
 </html>
