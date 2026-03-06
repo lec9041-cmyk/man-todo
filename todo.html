@@ -49,11 +49,11 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);co
 .tabbar{position:absolute;bottom:0;left:0;right:0;height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);
   background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-top:1px solid var(--b);display:flex;align-items:flex-start;justify-content:space-around;padding-top:6px;z-index:100}
-.tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:10px;color:var(--ink3)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:10px;color:#475569}
 .tab:active{background:var(--s2)}
-.tab-icon{font-size:22px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1),color .2s;color:var(--ink3)}
+.tab-icon{font-size:24px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1),filter .2s;filter:grayscale(0) saturate(1.1)}
 .tab.active{color:var(--brand)}
-.tab.active .tab-icon{transform:scale(1.18) translateY(-1px);color:var(--brand)}
+.tab.active .tab-icon{transform:scale(1.18) translateY(-1px);filter:grayscale(0) saturate(1.35)}
 .tab-dot{width:4px;height:4px;border-radius:50%;background:transparent;transition:background .15s}
 .tab.active .tab-dot{background:var(--brand)}
 .tab[data-tab=routine].active .tab-dot{background:var(--orange)}
@@ -303,12 +303,7 @@ i[data-lucide]{display:inline-flex;align-items:center;justify-content:center;poi
 i[data-lucide] svg{display:block;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 /* 탭바 */
 .tab-icon{display:flex;align-items:center;justify-content:center}
-.tab-icon i[data-lucide] svg{width:22px;height:22px;stroke:var(--ink3);transition:stroke .15s}
-.tab.active[data-tab=todo]    .tab-icon i svg{stroke:var(--brand)}
-.tab.active[data-tab=goals]   .tab-icon i svg{stroke:var(--yellow)}
-.tab.active[data-tab=routine] .tab-icon i svg{stroke:var(--orange)}
-.tab.active[data-tab=calendar].tab-icon i svg{stroke:var(--green)}
-.tab.active[data-tab=ai]      .tab-icon i svg{stroke:var(--purple)}
+/* 하단 탭은 기본 이모지 아이콘 사용 */
 /* 헤더 */
 .icon-btn i svg{width:17px;height:17px;stroke:var(--ink2)}
 /* 검색바 */
@@ -448,11 +443,11 @@ i[data-lucide] svg{display:block;stroke:currentColor;stroke-width:1.8;fill:none;
 
   <!-- 바텀탭 -->
   <nav class="tabbar">
-    <div class="tab active" data-tab="todo"><div class="tab-icon"><i data-lucide="check-square"></i></div><div class="tab-dot"></div></div>
-    <div class="tab" data-tab="goals"><div class="tab-icon"><i data-lucide="target"></i></div><div class="tab-dot"></div></div>
-    <div class="tab" data-tab="routine"><div class="tab-icon"><i data-lucide="repeat-2"></i></div><div class="tab-dot"></div></div>
-    <div class="tab" data-tab="calendar"><div class="tab-icon"><i data-lucide="calendar-days"></i></div><div class="tab-dot"></div></div>
-    <div class="tab" data-tab="ai"><div class="tab-icon"><i data-lucide="sparkles"></i></div><div class="tab-dot"></div></div>
+    <div class="tab active" data-tab="todo"><div class="tab-icon" aria-hidden="true">✅</div><div class="tab-dot"></div></div>
+    <div class="tab" data-tab="goals"><div class="tab-icon" aria-hidden="true">🎯</div><div class="tab-dot"></div></div>
+    <div class="tab" data-tab="routine"><div class="tab-icon" aria-hidden="true">🔁</div><div class="tab-dot"></div></div>
+    <div class="tab" data-tab="calendar"><div class="tab-icon" aria-hidden="true">📅</div><div class="tab-dot"></div></div>
+    <div class="tab" data-tab="ai"><div class="tab-icon" aria-hidden="true">✨</div><div class="tab-dot"></div></div>
   </nav>
 </div>
 
@@ -621,6 +616,11 @@ document.getElementById('tText').addEventListener('keydown',e=>{if(e.key==='Ente
 function addTodo(){
   const text=document.getElementById('tText').value.trim();
   if(!text){document.getElementById('tText').focus();return;}
+  const normalized=text.toLowerCase();
+  if(S.todo.items.some(i=>String(i.text||'').trim().toLowerCase()===normalized)){
+    alert('같은 할일이 이미 있어요.');
+    return;
+  }
   S.todo.items.unshift({
     id:uuid(),text,
     dueDate:document.getElementById('tDue').value||null,
@@ -1248,7 +1248,10 @@ async function sendAi(){
     const res=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({mode:aiSt.mode,payload:{message:msg,systemPrompt:sys,history:aiSt.history.slice(0,-1)}})});
     typ.remove();
-    if(!res.ok){const e=await res.json().catch(()=>({error:res.statusText}));throw new Error(e.error||`오류 ${res.status}`);}
+    if(!res.ok){
+      const e=await res.json().catch(()=>({error:res.statusText}));
+      throw new Error(e.error||e.message||`오류 ${res.status}`);
+    }
     const data=await res.json();const reply=data.reply||'응답 없음';
     aiSt.history.push({role:'assistant',content:reply});appendAiMsg('assistant',reply);
   }catch(e){typ.remove();const el=mk('div','');el.style.cssText='background:var(--red-d);color:var(--red);border-radius:10px;padding:9px 12px;font-size:13px;margin:0 0 4px';el.textContent=`오류: ${e.message}`;document.getElementById('aiMsgs').append(el);aiSt.history.pop();}
@@ -1332,7 +1335,10 @@ function normRoutines(v){
    유틸
 ═══════════════════════════════════════════════════════ */
 function mk(tag,cls){const el=document.createElement(tag);if(cls)el.className=cls;return el;}
-function uuid(){return crypto.randomUUID();}
+function uuid(){
+  if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;
+}
 function esc(v){return v.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
 function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('ko-KR',{month:'short',day:'numeric'});}
 
@@ -1340,17 +1346,17 @@ function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateSt
    초기화
 ═══════════════════════════════════════════════════════ */
 // 모든 render 함수 뒤에 lucide 아이콘 초기화 자동 실행
-const _origRenderTodo    = renderTodo;
-const _origRenderGoals   = renderGoals;
-const _origRenderGoalSum = renderGoalSummary;
-const _origRenderRoutine = renderRoutine;
-const _origRenderCal     = renderCalendar;
+const withIconRefresh=fn=>function(...args){
+  const out=fn.apply(this,args);
+  lucide.createIcons();
+  return out;
+};
 
-function renderTodo()         { _origRenderTodo();    lucide.createIcons(); }
-function renderGoals()        { _origRenderGoals();   lucide.createIcons(); }
-function renderGoalSummary()  { _origRenderGoalSum(); lucide.createIcons(); }
-function renderRoutine()      { _origRenderRoutine(); lucide.createIcons(); }
-function renderCalendar()     { _origRenderCal();     lucide.createIcons(); }
+renderTodo=withIconRefresh(renderTodo);
+renderGoals=withIconRefresh(renderGoals);
+renderGoalSummary=withIconRefresh(renderGoalSummary);
+renderRoutine=withIconRefresh(renderRoutine);
+renderCalendar=withIconRefresh(renderCalendar);
 
 renderTodo();
 renderGoalSummary();

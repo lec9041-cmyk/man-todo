@@ -7,33 +7,34 @@
  *   AI_PROVIDER        — "claude" | "openai" (optional, default "claude")
  */
 
-const VALID_MODES = new Set(["chat", "breakdown", "mandalart", "top3"]);
+const VALID_MODES = new Set(["chat", "suggest", "weekly-review", "breakdown", "mandalart", "top3"]);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ reply: "", message: "POST only" });
+    return res.status(405).json({ reply: "", error: "POST only", message: "POST only" });
   }
 
   const body = typeof req.body === "string" ? safeJson(req.body) : req.body;
   if (!body || typeof body !== "object") {
-    return res.status(400).json({ reply: "", message: "Invalid body" });
+    return res.status(400).json({ reply: "", error: "Invalid body", message: "Invalid body" });
   }
 
   const { mode, payload } = body;
 
   // [버그수정] mode 검증 추가 — 정의되지 않은 mode로 호출 시 400 반환
   if (!mode || !VALID_MODES.has(mode)) {
-    return res.status(400).json({ reply: "", message: `Invalid mode. Allowed: ${[...VALID_MODES].join(", ")}` });
+    const emsg=`Invalid mode. Allowed: ${[...VALID_MODES].join(", ")}`;
+    return res.status(400).json({ reply: "", error: emsg, message: emsg });
   }
 
   if (!payload || typeof payload !== "object") {
-    return res.status(400).json({ reply: "", message: "Missing payload" });
+    return res.status(400).json({ reply: "", error: "Missing payload", message: "Missing payload" });
   }
 
   // [버그수정] payload 기본 검증 — 필수 필드 누락 시 빠른 실패
   const validationError = validatePayload(mode, payload);
   if (validationError) {
-    return res.status(400).json({ reply: "", message: validationError });
+    return res.status(400).json({ reply: "", error: validationError, message: validationError });
   }
 
   const provider = (process.env.AI_PROVIDER || "claude").toLowerCase();
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
     const msg = err?.name === "AbortError"
       ? "AI 요청 시간 초과"
       : `AI 오류: ${String(err).slice(0, 200)}`;
-    return res.status(500).json({ reply: "", message: msg });
+    return res.status(500).json({ reply: "", error: msg, message: msg });
   }
 }
 
@@ -60,6 +61,14 @@ function validatePayload(mode, payload) {
     const msg = payload.message ?? payload.prompt;
     if (!msg || typeof msg !== "string" || !String(msg).trim()) {
       return "chat 모드: payload.message가 필요합니다.";
+    }
+    if (String(msg).length > 4000) return "메시지가 너무 깁니다 (최대 4000자).";
+  }
+
+  if (mode === "suggest" || mode === "weekly-review") {
+    const msg = payload.message ?? payload.prompt;
+    if (!msg || typeof msg !== "string" || !String(msg).trim()) {
+      return `${mode} 모드: payload.message가 필요합니다.`;
     }
     if (String(msg).length > 4000) return "메시지가 너무 깁니다 (최대 4000자).";
   }
@@ -198,6 +207,38 @@ function buildMessages(mode, payload) {
     return {
       systemPrompt: typeof payload.systemPrompt === "string" ? payload.systemPrompt : baseSystem,
       userMessage,
+      history: Array.isArray(payload.history) ? payload.history : []
+    };
+  }
+
+  if (mode === "suggest") {
+    return {
+      systemPrompt: payload.systemPrompt || baseSystem,
+      userMessage: `오늘의 생산성 향상을 위한 짧고 실천 가능한 제안 1개를 해주세요:\n${payload.message}`,
+      history: Array.isArray(payload.history) ? payload.history : []
+    };
+  }
+
+  if (mode === "weekly-review") {
+    const weeklySystem = `${baseSystem}
+만다라트 중심 목표와 최근 7일간 완료/미완료 할 일의 연관성을 반드시 분석하세요.
+아래 마크다운 섹션을 정확히 지켜 한국어로 답변하세요:
+## 전체 평가
+- ...
+## 중심 목표 연계 분석
+- ...
+## 잘한 점
+- ...
+## 개선할 점
+- ...
+## 다음 주 제안
+- ...
+## 이번 주 MVP
+- ...
+모든 섹션 헤더를 생략하지 말고, 각 항목은 실행 가능한 내용으로 작성하세요.`;
+    return {
+      systemPrompt: payload.systemPrompt || weeklySystem,
+      userMessage: payload.message || "이번 주를 돌아보고 다음 주 개선점을 알려줘.",
       history: Array.isArray(payload.history) ? payload.history : []
     };
   }
