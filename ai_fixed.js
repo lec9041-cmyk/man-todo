@@ -220,8 +220,24 @@ function buildMessages(mode, payload) {
   }
 
   if (mode === "weekly-review") {
+    const weeklySystem = `${baseSystem}
+만다라트 중심 목표와 최근 7일간 완료/미완료 할 일의 연관성을 반드시 분석하세요.
+아래 마크다운 섹션을 정확히 지켜 한국어로 답변하세요:
+## 전체 평가
+- ...
+## 중심 목표 연계 분석
+- ...
+## 잘한 점
+- ...
+## 개선할 점
+- ...
+## 다음 주 제안
+- ...
+## 이번 주 MVP
+- ...
+모든 섹션 헤더를 생략하지 말고, 각 항목은 실행 가능한 내용으로 작성하세요.`;
     return {
-      systemPrompt: payload.systemPrompt || baseSystem,
+      systemPrompt: payload.systemPrompt || weeklySystem,
       userMessage: payload.message || "이번 주를 돌아보고 다음 주 개선점을 알려줘.",
       history: Array.isArray(payload.history) ? payload.history : []
     };
