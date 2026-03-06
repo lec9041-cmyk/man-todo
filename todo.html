@@ -4,30 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Todo List</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <h1>Goal Hierarchy</h1>
-        <div>
-            <label for="goal-selector">Select Goal Level:</label>
-            <select id="goal-selector">
-                <option value="yearly">Yearly Goals</option>
-                <option value="monthly">Monthly Goals</option>
-                <option value="weekly">Weekly Goals</option>
-            </select>
-        </div>
-        <div id="goal-container">
-            <!-- Dynamic content will be injected here based on selected goal level -->
-        </div>
+    <h1>Goals Manager</h1>
+    <form id="goalForm">
+        <label for="goalName">Goal Name:</label>
+        <input type="text" id="goalName" required>
+
+        <label for="goalLevel">Goal Level:</label>
+        <select id="goalLevel">
+            <option value="yearly">Yearly</option>
+            <option value="monthly">Monthly</option>
+            <option value="weekly">Weekly</option>
+        </select>
+
+        <label for="parentGoalId">Parent Goal:</label>
+        <select id="parentGoalId">
+            <option value="">None</option>
+            <!-- Options will be populated with parent goals -->
+        </select>
+
+        <button type="submit">Add Goal</button>
+    </form>
+
+    <div id="goalList">
+        <!-- Goals will be displayed here -->
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        // JavaScript functionality to manage goals and handle parent selection
+
+        // Function to add a new goal
+        document.getElementById('goalForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const goalName = document.getElementById('goalName').value;
+            const goalLevel = document.getElementById('goalLevel').value;
+            const parentGoalId = document.getElementById('parentGoalId').value;
+            // Logic to save goal...
+
+            // Clear form
+            this.reset();
+        });
+
+        // Function to load parent goals into the selection (if applicable)
+        function loadParentGoals() {
+            // Logic to fetch and display parent goals
+        }
+
+        loadParentGoals();
+    </script>
 </body>
 </html>
-
-// JavaScript code to handle hierarchy
-const goalSelector = document.getElementById('goal-selector');
-goalSelector.addEventListener('change', (event) => {
-    const selectedGoalLevel = event.target.value;
-    // Logic to handle displaying the appropriate goals can be implemented here.
-});
