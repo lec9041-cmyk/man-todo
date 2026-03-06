@@ -396,6 +396,8 @@
       border: 0;
     }
 
+
+
     @media (max-width: 720px) {
       .app { padding: 14px; }
       .ai-dialog {
@@ -417,37 +419,26 @@
     <section class="tab-panel active" id="panel-focus">
       <div class="stack">
         <div class="card">
-          <div class="card-title">주간 목표</div>
+          <div class="card-title">핵심 목표</div>
           <div class="row">
-            <strong id="focusWeeklyTitle">주간 목표가 없습니다</strong>
-            <span class="meta" id="focusWeeklyValue">0 / 0</span>
+            <strong id="focusYearlyTitle">연간 목표가 없습니다</strong>
+            <span class="meta" id="focusYearlyValue">0%</span>
           </div>
-          <div class="progress"><span id="focusWeeklyBar"></span></div>
+          <div class="tiny" id="focusMonthlyTitle" style="margin-top:8px;">대표 월간 목표가 없습니다</div>
+          <div class="progress"><span id="focusYearlyBar"></span></div>
         </div>
 
         <div class="card">
-          <div class="card-title">오늘 남은 할일</div>
+          <div class="card-title">오늘 실행 현황</div>
           <div class="row">
-            <span class="meta">진행 대기 항목</span>
+            <span class="meta">오늘 남은 할일</span>
             <strong id="focusTodayRemain">0</strong>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">루틴</div>
-          <div class="row">
-            <span class="meta">완료율</span>
+          <div class="row" style="margin-top:6px;">
+            <span class="meta">루틴 완료율</span>
             <strong id="focusRoutineValue">0%</strong>
           </div>
           <div class="progress"><span id="focusRoutineBar"></span></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">연속 기록</div>
-          <div class="row">
-            <span class="meta">집중 유지 일수</span>
-            <strong><span id="focusStreak">0</span>일</strong>
-          </div>
         </div>
 
         <div class="card">
@@ -489,6 +480,10 @@
           <div class="card-title">할일 추가</div>
           <div class="goal-form">
             <input id="taskTitle" type="text" placeholder="할일 제목" maxlength="120" />
+            <div class="goal-grid">
+              <select id="taskYearlyGoal"><option value="">연간 목표 선택</option></select>
+              <select id="taskMonthlyGoal"><option value="">월간 목표 선택</option></select>
+            </div>
             <input id="taskDue" type="date" />
             <button class="btn-primary" id="addTaskBtn">할일 추가</button>
           </div>
@@ -509,24 +504,20 @@
             <input id="goalTitle" type="text" placeholder="목표 제목" maxlength="120" />
             <div class="goal-grid">
               <select id="goalType">
-                <option value="weekly">주간</option>
+                <option value="yearly">연간</option>
                 <option value="monthly">월간</option>
               </select>
-              <input id="goalTarget" type="number" min="1" value="100" />
+              <input id="goalTarget" type="number" min="1" value="10" />
             </div>
+            <select id="goalParent" style="display:none;"><option value="">연간 목표 선택(월간일 때 필수)</option></select>
             <input id="goalDeadline" type="date" />
             <button class="btn-primary" id="addGoalBtn">목표 추가</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title">주간 목표 목록</div>
-          <div class="list" id="weeklyGoalList"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">월간 목표 목록</div>
-          <div class="list" id="monthlyGoalList"></div>
+          <div class="card-title">연간 목표</div>
+          <div class="list" id="goalHierarchyList"></div>
         </div>
       </div>
     </section>
@@ -564,7 +555,7 @@
             <div class="row"><span class="meta">완료한 할일</span><strong id="statCompleted">0</strong></div>
             <div class="row"><span class="meta">전체 할일</span><strong id="statTotal">0</strong></div>
             <div class="row"><span class="meta">루틴 완료율</span><strong id="statRoutineRate">0%</strong></div>
-            <div class="row"><span class="meta">주간 목표 달성</span><strong id="statWeeklyGoals">0 / 0</strong></div>
+            <div class="row"><span class="meta">목표 달성</span><strong id="statWeeklyGoals">0 / 0</strong></div>
           </div>
         </div>
 
@@ -654,6 +645,7 @@
         tasks: [],
         routines: [],
         goals: [],
+        mandalarts: [],
         ai: {
           dailyInsight: '',
           dailyInsightDate: '',
@@ -670,22 +662,64 @@
     }
 
     function normalizeGoal(g) {
+      const normalizedType = g.type === 'yearly' ? 'yearly' : (g.type === 'monthly' || g.type === 'weekly' ? 'monthly' : 'monthly');
       return {
         id: g.id,
         title: String(g.title || '').trim(),
-        type: g.type === 'monthly' ? 'monthly' : 'weekly',
+        type: normalizedType,
+        parentGoalId: normalizedType === 'yearly' ? null : String(g.parentGoalId || g.yearlyGoalId || ''),
         target: Math.max(1, Number(g.target) || 1),
         progress: Math.max(0, Number(g.progress) || 0),
         deadline: normalizeDateText(g.deadline),
         linkedTodos: Array.isArray(g.linkedTodos) ? g.linkedTodos.filter(Boolean) : [],
-        lastResetWeekKey: g.lastResetWeekKey || weekKey(new Date()),
         createdAt: Number(g.createdAt) || Date.now()
+      };
+    }
+
+    function normalizeMandalartCell(cell, fallbackText = '') {
+      return {
+        id: String(cell?.id || uid()),
+        text: String(cell?.text ?? cell?.title ?? cell?.value ?? fallbackText ?? '').trim(),
+        linkedGoalId: String(cell?.linkedGoalId || cell?.goalId || ''),
+        linkedTodoIds: Array.isArray(cell?.linkedTodoIds)
+          ? cell.linkedTodoIds.map(String).filter(Boolean)
+          : Array.isArray(cell?.todoIds)
+            ? cell.todoIds.map(String).filter(Boolean)
+            : []
+      };
+    }
+
+    function normalizeMandalart(item, idx = 0) {
+      const sourceCells = Array.isArray(item?.cells)
+        ? item.cells
+        : Array.isArray(item?.subGoals)
+          ? item.subGoals
+          : Array.isArray(item?.items)
+            ? item.items
+            : Array.isArray(item?.details)
+              ? item.details
+              : [];
+      const centerText = String(item?.centerText || item?.coreGoal || item?.title || '').trim();
+      const cells = [];
+      for (let i = 0; i < 9; i += 1) {
+        const cell = sourceCells[i] || {};
+        const fallback = i === 4 ? centerText : '';
+        cells.push(normalizeMandalartCell(cell, fallback));
+      }
+      if (!cells[4].text) cells[4].text = centerText;
+      return {
+        id: String(item?.id || uid()),
+        title: String(item?.title || item?.name || cells[4].text || `만다라트 ${idx + 1}`).trim(),
+        dueDate: normalizeDateText(item?.dueDate || item?.deadline || item?.targetDate),
+        cells,
+        collapsed: !!item?.collapsed,
+        createdAt: Number(item?.createdAt) || Date.now()
       };
     }
 
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pulsehome_personal_os_v2');
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pulsehome_personal_os_v2') || localStorage.getItem('focus_planner_v3');
         if (!raw) return defaultState();
         const p = JSON.parse(raw);
         const d = defaultState();
@@ -696,7 +730,8 @@
             status: t.status === 'done' ? 'done' : 'active',
             dueDate: normalizeDateText(t.dueDate) || today(),
             createdAt: Number(t.createdAt) || Date.now(),
-            doneAt: t.doneAt || null
+            doneAt: t.doneAt || null,
+            linkedGoalId: String(t.linkedGoalId || t.monthlyGoalId || '')
           })).filter(t => t.id && t.title) : [],
           routines: Array.isArray(p.routines) ? p.routines.map(r => ({
             id: r.id,
@@ -705,6 +740,32 @@
             createdAt: Number(r.createdAt) || Date.now()
           })).filter(r => r.id && r.title) : [],
           goals: Array.isArray(p.goals) ? p.goals.map(normalizeGoal).filter(g => g.id && g.title) : [],
+          mandalarts: (() => {
+            const legacy = p.mandalarts || p.mandalart || p.mandalat || p.goalMandalarts;
+            const fromArray = Array.isArray(legacy)
+              ? legacy
+              : [];
+            const fromObject = p.mandala && typeof p.mandala === 'object' && !Array.isArray(p.mandala)
+              ? (() => {
+                const legacyCells = Array.isArray(p.mandala.cells) ? p.mandala.cells : [];
+                const centerText = String(p.mandala.centerText || p.mandala.coreGoal || p.mandala.core || '').trim();
+                const cells = Array.from({ length: 9 }).map((_, index) => ({ text: String(legacyCells[index] || '').trim() }));
+                if (centerText) cells[4].text = centerText;
+                return [{
+                  id: p.mandala.id,
+                  title: p.mandala.title || centerText || '복구된 만다라트',
+                  dueDate: p.mandala.dueDate || p.mandala.deadline,
+                  cells,
+                  createdAt: p.mandala.createdAt
+                }];
+              })()
+              : Array.isArray(p.mandala)
+                ? p.mandala
+                : [];
+            return [...fromArray, ...fromObject]
+              .map((item, idx) => normalizeMandalart(item, idx))
+              .filter(m => m.id && m.title);
+          })(),
           ai: {
             dailyInsight: String(p.ai?.dailyInsight || ''),
             dailyInsightDate: String(p.ai?.dailyInsightDate || ''),
@@ -735,10 +796,75 @@
         ...task,
         dueDate: normalizeDateText(task.dueDate) || today()
       }));
+      state.mandalarts = (Array.isArray(state.mandalarts) ? state.mandalarts : []).map((item, idx) => normalizeMandalart(item, idx));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
     const state = loadState();
+
+    function ensureGoalHierarchy() {
+      const yearlyGoals = state.goals.filter(g => g.type === 'yearly');
+      const fallbackYearly = yearlyGoals[0]?.id || null;
+      state.goals.forEach(goal => {
+        if (goal.type === 'yearly') {
+          goal.parentGoalId = null;
+        } else {
+          if (!goal.parentGoalId || !state.goals.some(g => g.id === goal.parentGoalId && g.type === 'yearly')) {
+            goal.parentGoalId = fallbackYearly;
+          }
+        }
+      });
+    }
+
+    function refreshAllGoalProgress() {
+      const monthlyGoals = state.goals.filter(g => g.type === 'monthly');
+      monthlyGoals.forEach(goal => {
+        const linked = state.tasks.filter(task => goal.linkedTodos.includes(task.id));
+        const done = linked.filter(task => task.status === 'done').length;
+        goal.progress = Math.min(goal.target, done);
+      });
+
+      const yearlyGoals = state.goals.filter(g => g.type === 'yearly');
+      yearlyGoals.forEach(goal => {
+        const children = monthlyGoals.filter(m => m.parentGoalId === goal.id);
+        if (!children.length) {
+          goal.progress = 0;
+          goal.target = 100;
+          return;
+        }
+        const avg = Math.round(children.reduce((sum, child) => sum + progressPercent(child.progress, child.target), 0) / children.length);
+        goal.target = 100;
+        goal.progress = avg;
+      });
+    }
+
+    function renderGoalSelects() {
+      const yearlyGoals = state.goals.filter(g => g.type === 'yearly').sort((a, b) => b.createdAt - a.createdAt);
+      const goalParent = document.getElementById('goalParent');
+      const taskYearlyGoal = document.getElementById('taskYearlyGoal');
+      if (goalParent) {
+        goalParent.innerHTML = `<option value="">연간 목표 선택(월간일 때 필수)</option>${yearlyGoals.map(g => `<option value="${g.id}">${escapeHtml(g.title)}</option>`).join('')}`;
+      }
+      if (taskYearlyGoal) {
+        const selected = taskYearlyGoal.value;
+        taskYearlyGoal.innerHTML = `<option value="">연간 목표 선택</option>${yearlyGoals.map(g => `<option value="${g.id}">${escapeHtml(g.title)}</option>`).join('')}`;
+        taskYearlyGoal.value = yearlyGoals.some(g => g.id === selected) ? selected : '';
+      }
+      renderTaskMonthlyGoalOptions();
+    }
+
+    function renderTaskMonthlyGoalOptions() {
+      const yearlyId = document.getElementById('taskYearlyGoal')?.value || '';
+      const monthlySelect = document.getElementById('taskMonthlyGoal');
+      if (!monthlySelect) return;
+      const monthlyGoals = state.goals
+        .filter(g => g.type === 'monthly' && (!yearlyId || g.parentGoalId === yearlyId))
+        .sort((a, b) => b.createdAt - a.createdAt);
+      const current = monthlySelect.value;
+      monthlySelect.innerHTML = `<option value="">월간 목표 선택</option>${monthlyGoals.map(g => `<option value="${g.id}">${escapeHtml(g.title)}</option>`).join('')}`;
+      monthlySelect.value = monthlyGoals.some(g => g.id === current) ? current : '';
+    }
+
 
     function setTab(tab) {
       state.ui.tab = tab;
@@ -810,24 +936,12 @@
     }
 
     function resetWeeklyGoalsIfNeeded() {
-      const currentWeek = weekKey(new Date());
-      let changed = false;
-      state.goals.forEach(goal => {
-        if (goal.type === 'weekly' && goal.lastResetWeekKey !== currentWeek) {
-          goal.progress = 0;
-          goal.lastResetWeekKey = currentWeek;
-          changed = true;
-        }
-      });
-      if (changed) saveState();
+      return;
     }
 
     function refreshGoalProgressForTask(taskId) {
-      state.goals.forEach(goal => {
-        if (!goal.linkedTodos.includes(taskId)) return;
-        const doneCount = goal.linkedTodos.filter(id => state.tasks.some(t => t.id === id && t.status === 'done')).length;
-        goal.progress = Math.min(goal.target, doneCount);
-      });
+      if (!taskId) return;
+      refreshAllGoalProgress();
     }
 
     function addTask() {
@@ -836,14 +950,22 @@
       const dueDate = normalizeDateText(dueInput) || state.ui.selectedDate || today();
       if (!title) return;
 
+      const monthlyGoalId = document.getElementById('taskMonthlyGoal').value;
+      const taskId = uid();
       state.tasks.unshift({
-        id: uid(),
+        id: taskId,
         title,
         status: 'active',
         dueDate,
+        linkedGoalId: monthlyGoalId || '',
         createdAt: Date.now(),
         doneAt: null
       });
+      if (monthlyGoalId) {
+        const monthlyGoal = state.goals.find(g => g.id === monthlyGoalId && g.type === 'monthly');
+        if (monthlyGoal && !monthlyGoal.linkedTodos.includes(taskId)) monthlyGoal.linkedTodos.push(taskId);
+      }
+      refreshAllGoalProgress();
       document.getElementById('taskTitle').value = '';
       document.getElementById('taskDue').value = state.ui.selectedDate;
       saveState();
@@ -873,31 +995,27 @@
       const deadline = normalizeDateText(document.getElementById('goalDeadline').value);
       if (!title || target < 1) return;
 
+      const parentGoalId = document.getElementById('goalParent').value;
+      const normalizedType = type === 'yearly' ? 'yearly' : 'monthly';
+      if (normalizedType === 'monthly' && !parentGoalId) return;
+
       state.goals.unshift({
         id: uid(),
         title,
-        type: type === 'monthly' ? 'monthly' : 'weekly',
+        type: normalizedType,
+        parentGoalId: normalizedType === 'yearly' ? null : parentGoalId,
         target,
         progress: 0,
         deadline,
         linkedTodos: [],
-        lastResetWeekKey: weekKey(new Date()),
         createdAt: Date.now()
       });
 
       document.getElementById('goalTitle').value = '';
-      document.getElementById('goalTarget').value = '100';
-      saveState();
-      renderGoals();
-      renderFocus();
-      renderStats();
-    }
-
-    function linkTaskToGoal(goalId, taskId) {
-      const goal = state.goals.find(g => g.id === goalId);
-      if (!goal || !taskId) return;
-      if (!goal.linkedTodos.includes(taskId)) goal.linkedTodos.push(taskId);
-      refreshGoalProgressForTask(taskId);
+      document.getElementById('goalTarget').value = normalizedType === 'yearly' ? '10' : '10';
+      document.getElementById('goalParent').value = '';
+      ensureGoalHierarchy();
+      refreshAllGoalProgress();
       saveState();
       renderGoals();
       renderFocus();
@@ -1007,44 +1125,61 @@
     function renderGoalGroup(container, goals) {
       container.innerHTML = '';
       if (!goals.length) {
-        const div = document.createElement('div');
-        div.className = 'meta';
-        div.textContent = '등록된 목표가 없습니다';
-        container.appendChild(div);
+        container.innerHTML = '<div class="meta">등록된 목표가 없습니다</div>';
         return;
       }
 
       goals.forEach(goal => {
         const p = progressPercent(goal.progress, goal.target);
-        const card = document.createElement('div');
-        card.className = 'item';
-        card.style.display = 'block';
-        card.innerHTML = `
-          <div class="row">
-            <strong>${escapeHtml(goal.title)}</strong>
-            <span class="tiny">${goal.progress} / ${goal.target}</span>
-          </div>
+        const row = document.createElement('div');
+        row.className = 'item';
+        row.style.display = 'block';
+        row.innerHTML = `
+          <div class="row"><strong>${escapeHtml(goal.title)}</strong><span class="tiny">${goal.progress} / ${goal.target}</span></div>
           <div class="progress"><span style="width:${p}%"></span></div>
           <div class="tiny" style="margin-top:6px;">${goal.deadline || '마감일 없음'}</div>
-          <div class="divider"></div>
-          <div class="inline">
-            <select id="goal-task-${goal.id}">
-              <option value="">할일 연결</option>
-              ${state.tasks.filter(t => t.status !== 'done').map(t => `<option value="${t.id}">${escapeHtml(t.title)}</option>`).join('')}
-            </select>
-            <button data-action="link-goal" data-id="${goal.id}">연결</button>
-          </div>
         `;
-        container.appendChild(card);
+        container.appendChild(row);
       });
     }
 
     function renderGoals() {
-      resetWeeklyGoalsIfNeeded();
-      const weekly = state.goals.filter(g => g.type === 'weekly');
-      const monthly = state.goals.filter(g => g.type === 'monthly');
-      renderGoalGroup(document.getElementById('weeklyGoalList'), weekly);
-      renderGoalGroup(document.getElementById('monthlyGoalList'), monthly);
+      ensureGoalHierarchy();
+      refreshAllGoalProgress();
+      renderGoalSelects();
+      const container = document.getElementById('goalHierarchyList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const yearlyGoals = state.goals.filter(g => g.type === 'yearly').sort((a, b) => b.createdAt - a.createdAt);
+      if (!yearlyGoals.length) {
+        container.innerHTML = '<div class="meta">연간 목표를 먼저 만들어 주세요</div>';
+        return;
+      }
+
+      yearlyGoals.forEach(yearly => {
+        const monthlyGoals = state.goals
+          .filter(g => g.type === 'monthly' && g.parentGoalId === yearly.id)
+          .sort((a, b) => b.createdAt - a.createdAt);
+        const yearlyPercent = progressPercent(yearly.progress, yearly.target);
+        const block = document.createElement('div');
+        block.className = 'item';
+        block.style.display = 'block';
+        block.innerHTML = `
+          <div class="row"><strong>${escapeHtml(yearly.title)}</strong><span class="tiny">${yearlyPercent}%</span></div>
+          <div class="progress"><span style="width:${yearlyPercent}%"></span></div>
+          <div class="tiny" style="margin-top:6px;">${yearly.deadline || '마감일 없음'}</div>
+          <div class="divider"></div>
+          <div class="list" id="monthly-by-${yearly.id}"></div>
+        `;
+        container.appendChild(block);
+        const monthlyContainer = block.querySelector(`#monthly-by-${yearly.id}`);
+        if (!monthlyGoals.length) {
+          monthlyContainer.innerHTML = '<div class="meta">연결된 월간 목표가 없습니다</div>';
+        } else {
+          renderGoalGroup(monthlyContainer, monthlyGoals);
+        }
+      });
     }
 
     function renderRoutine() {
@@ -1070,29 +1205,36 @@
     }
 
     function renderFocus() {
-      const weekly = state.goals.filter(g => g.type === 'weekly').sort((a, b) => b.createdAt - a.createdAt)[0];
-      const weeklyTitle = document.getElementById('focusWeeklyTitle');
-      const weeklyValue = document.getElementById('focusWeeklyValue');
-      const weeklyBar = document.getElementById('focusWeeklyBar');
+      ensureGoalHierarchy();
+      refreshAllGoalProgress();
+      const yearly = state.goals.filter(g => g.type === 'yearly').sort((a, b) => b.createdAt - a.createdAt)[0];
+      const monthly = yearly
+        ? state.goals.filter(g => g.type === 'monthly' && g.parentGoalId === yearly.id).sort((a, b) => b.createdAt - a.createdAt)[0]
+        : null;
+      const yearlyTitle = document.getElementById('focusYearlyTitle');
+      const yearlyValue = document.getElementById('focusYearlyValue');
+      const yearlyBar = document.getElementById('focusYearlyBar');
+      const monthlyTitle = document.getElementById('focusMonthlyTitle');
 
-      if (!weekly) {
-        weeklyTitle.textContent = '주간 목표가 없습니다';
-        weeklyValue.textContent = '0 / 0';
-        weeklyBar.style.width = '0%';
+      if (!yearly) {
+        yearlyTitle.textContent = '연간 목표가 없습니다';
+        yearlyValue.textContent = '0%';
+        yearlyBar.style.width = '0%';
+        monthlyTitle.textContent = '대표 월간 목표가 없습니다';
       } else {
-        const p = progressPercent(weekly.progress, weekly.target);
-        weeklyTitle.textContent = weekly.title;
-        weeklyValue.textContent = `${weekly.progress} / ${weekly.target}`;
-        weeklyBar.style.width = `${p}%`;
+        const percent = progressPercent(yearly.progress, yearly.target);
+        yearlyTitle.textContent = yearly.title;
+        yearlyValue.textContent = `${percent}%`;
+        yearlyBar.style.width = `${percent}%`;
+        monthlyTitle.textContent = monthly
+          ? `대표 월간 목표: ${monthly.title} (${progressPercent(monthly.progress, monthly.target)}%)`
+          : '대표 월간 목표가 없습니다';
       }
 
       document.getElementById('focusTodayRemain').textContent = String(getTodayTasks().length);
-
       const routineRate = calcRoutineRateToday();
       document.getElementById('focusRoutineValue').textContent = `${routineRate}%`;
       document.getElementById('focusRoutineBar').style.width = `${routineRate}%`;
-
-      document.getElementById('focusStreak').textContent = String(calcStreak());
       document.getElementById('focusInsight').textContent = state.ai.dailyInsight || '아직 오늘의 제안이 없습니다';
     }
 
@@ -1108,15 +1250,15 @@
       const totalTodos = state.tasks.length;
       const completedTodos = getDoneTasksCount();
       const routineCompletionRate = calcRoutineRateToday();
-      const weeklyGoals = state.goals.filter(g => g.type === 'weekly');
-      const weeklyGoalsCompleted = weeklyGoals.filter(g => g.progress >= g.target).length;
+      const monthlyGoals = state.goals.filter(g => g.type === 'monthly');
+      const weeklyGoalsCompleted = monthlyGoals.filter(g => g.progress >= g.target).length;
 
       return {
         completedTodos,
         totalTodos,
         routineCompletionRate,
         weeklyGoalsCompleted,
-        weeklyGoalsTotal: weeklyGoals.length
+        weeklyGoalsTotal: monthlyGoals.length
       };
     }
 
@@ -1160,6 +1302,7 @@
       state.ai.chatHistory = state.ai.chatHistory.slice(-40);
       input.value = '';
       renderChat();
+      document.getElementById('goalParent').style.display = document.getElementById('goalType').value === 'monthly' ? 'block' : 'none';
       saveState();
 
       try {
@@ -1185,6 +1328,7 @@
       state.ai.chatHistory = state.ai.chatHistory.slice(-40);
       saveState();
       renderChat();
+      document.getElementById('goalParent').style.display = document.getElementById('goalType').value === 'monthly' ? 'block' : 'none';
     }
 
     async function requestDailyInsight() {
@@ -1212,7 +1356,7 @@
     }
 
     function buildWeeklyReviewPrompt(stats) {
-      return `다음 데이터를 바탕으로 주간 생산성 회고를 한국어로 작성해 주세요.\n\n구성:\n1. 전체 평가\n2. 잘한 점\n3. 개선할 점\n4. 다음 주 제안\n5. 이번 주 핵심 한 가지\n\n데이터:\n완료한 할일=${stats.completedTodos}\n전체 할일=${stats.totalTodos}\n루틴 완료율=${stats.routineCompletionRate}\n완료한 주간 목표=${stats.weeklyGoalsCompleted}\n전체 주간 목표=${stats.weeklyGoalsTotal}`;
+      return `다음 데이터를 바탕으로 주간 생산성 회고를 한국어로 작성해 주세요.\n\n구성:\n1. 전체 평가\n2. 잘한 점\n3. 개선할 점\n4. 다음 주 제안\n5. 이번 주 핵심 한 가지\n\n데이터:\n완료한 할일=${stats.completedTodos}\n전체 할일=${stats.totalTodos}\n루틴 완료율=${stats.routineCompletionRate}\n완료한 월간 목표=${stats.weeklyGoalsCompleted}\n전체 월간 목표=${stats.weeklyGoalsTotal}`;
     }
 
     async function maybeRunWeeklyReview() {
@@ -1273,10 +1417,6 @@
 
       if (action === 'toggle-task') toggleTask(id);
       if (action === 'toggle-routine') toggleRoutine(id);
-      if (action === 'link-goal') {
-        const select = document.getElementById(`goal-task-${id}`);
-        if (select) linkTaskToGoal(id, select.value);
-      }
       if (action === 'select-date') setSelectedDate(actionEl.dataset.date);
     });
 
@@ -1309,6 +1449,11 @@
     });
 
     document.getElementById('addGoalBtn').addEventListener('click', addGoal);
+    document.getElementById('taskYearlyGoal').addEventListener('change', renderTaskMonthlyGoalOptions);
+    document.getElementById('goalType').addEventListener('change', (e) => {
+      const parent = document.getElementById('goalParent');
+      parent.style.display = e.target.value === 'monthly' ? 'block' : 'none';
+    });
     document.getElementById('addRoutineBtn').addEventListener('click', addRoutine);
     document.getElementById('routineTitle').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addRoutine();
@@ -1330,7 +1475,8 @@
     });
 
     async function init() {
-      resetWeeklyGoalsIfNeeded();
+      ensureGoalHierarchy();
+      refreshAllGoalProgress();
       setTab(state.ui.tab);
       renderTasks();
       renderGoals();
@@ -1338,6 +1484,7 @@
       renderFocus();
       renderStats();
       renderChat();
+      document.getElementById('goalParent').style.display = document.getElementById('goalType').value === 'monthly' ? 'block' : 'none';
       await requestDailyInsight();
       await maybeRunWeeklyReview();
       renderFocus();
