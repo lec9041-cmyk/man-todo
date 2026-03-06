@@ -933,6 +933,9 @@
         if (aiState.mode === "suggest") {
           const todoSummary = buildTodoSummary();
           if (todoSummary) userMessage = `${text}\n\n[현재 할일 목록]\n${todoSummary}`;
+        } else if (aiState.mode === "weekly-review") {
+          const weeklySummary = buildWeeklySummary();
+          if (weeklySummary) userMessage = `${text}\n\n[최근 7일 수행 데이터]\n${weeklySummary}`;
         }
 
         const systemPrompt = buildSystemPrompt();
@@ -993,6 +996,41 @@
         .slice(0, 10)
         .map(item => `- [${priorityLabel[item.priority]}] ${item.text}${item.dueDate ? ` (마감: ${item.dueDate})` : ""}`)
         .join("\n");
+    }
+
+    function buildWeeklySummary() {
+      const now = Date.now();
+      const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+      const recentItems = state.todo.items.filter(item => typeof item.createdAt === "number" && item.createdAt >= sevenDaysAgo);
+
+      const doneItems = recentItems.filter(item => item.done);
+      const pendingItems = recentItems.filter(item => !item.done);
+      const priorityDistribution = { high: 0, mid: 0, low: 0 };
+
+      recentItems.forEach(item => {
+        if (priorityDistribution[item.priority] !== undefined) {
+          priorityDistribution[item.priority] += 1;
+        }
+      });
+
+      const completionRate = recentItems.length
+        ? Math.round((doneItems.length / recentItems.length) * 100)
+        : 0;
+      const coreGoal = state.mandala.core?.trim() || "(설정되지 않음)";
+      const formatTodo = (item) => `- [${priorityLabel[item.priority] || "중간"}] ${item.text}${item.dueDate ? ` (마감: ${item.dueDate})` : ""}`;
+
+      return [
+        `중심 목표: ${coreGoal}`,
+        `최근 7일 총 할 일: ${recentItems.length}개`,
+        `완료율: ${completionRate}% (${doneItems.length}/${recentItems.length || 0})`,
+        `우선순위 분포: 높음 ${priorityDistribution.high}개, 중간 ${priorityDistribution.mid}개, 낮음 ${priorityDistribution.low}개`,
+        "",
+        "완료된 항목:",
+        doneItems.length ? doneItems.map(formatTodo).join("\n") : "- 없음",
+        "",
+        "미완료 항목:",
+        pendingItems.length ? pendingItems.map(formatTodo).join("\n") : "- 없음"
+      ].join("\n");
     }
 
     /* ─── AI UI 빌더 ──────────────────────────────────────── */

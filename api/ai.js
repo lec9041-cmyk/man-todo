@@ -175,7 +175,7 @@ Keep answers concise and structured.`;
 
   if (mode === 'weekly-review') {
     return {
-      systemPrompt: payload.systemPrompt || `${baseSystem}\nUse sections: Overall evaluation, Good points, Improvement points, Suggestions for next week, Weekly MVP.`,
+      systemPrompt: payload.systemPrompt || `${baseSystem}\nYou must analyze alignment between the Mandalart core goal and actual completed/pending todos from the weekly summary data.\nAlways answer in Korean with this exact markdown structure:\n## 전체 평가\n- ...\n## 중심 목표 연계 분석\n- ...\n## 잘한 점\n- ...\n## 개선할 점\n- ...\n## 다음 주 제안\n- ...\n## 이번 주 MVP\n- ...\nDo not omit any section headers and keep each bullet concrete and actionable.`,
       userMessage: payload.message,
       history: payload.history
     };
