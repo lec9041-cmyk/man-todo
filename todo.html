@@ -1,58 +1,1603 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo List</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Focus Planner | TODO + Mandalart + AI</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #dbe4ee;
+      --brand: #0f766e;
+      --brand-2: #0ea5a4;
+      --danger: #dc2626;
+      --ai: #6366f1;
+      --ai-light: #eef2ff;
+      --shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 7%, #ccfbf1 0%, transparent 24%),
+        radial-gradient(circle at 88% 2%, #dbeafe 0%, transparent 26%),
+        var(--bg);
+      padding: 16px;
+    }
+
+    .app {
+      width: min(1060px, 100%);
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); letter-spacing: -0.02em; }
+    .sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+    .tabs {
+      display: inline-flex;
+      background: #eef2ff;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid #dbeafe;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      border: 0;
+      background: transparent;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-weight: 800;
+      cursor: pointer;
+      color: #334155;
+    }
+
+    .tab-btn.active {
+      background: #fff;
+      color: var(--brand);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+    }
+
+    .tab-btn[data-tab="ai"].active { color: var(--ai); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: #f8fbff;
+      margin-bottom: 12px;
+    }
+
+    input, select, button, textarea {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 14px;
+      padding: 10px 11px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea { resize: vertical; min-height: 76px; }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #99f6e4;
+      border-color: #5eead4;
+    }
+
+    button { cursor: pointer; font-weight: 700; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--brand-2), var(--brand));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .btn-ai {
+      background: linear-gradient(135deg, #818cf8, var(--ai));
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .btn-ghost { background: #fff; }
+    .btn-danger { color: var(--danger); border-color: #fecaca; background: #fff; }
+
+    .todo-add {
+      display: grid;
+      grid-template-columns: 1.3fr auto auto auto auto;
+      gap: 8px;
+    }
+
+    .toolbar {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    .chip.active { background: #0f172a; color: #fff; border-color: #0f172a; }
+
+    .stats { color: var(--muted); font-size: 14px; margin-top: 10px; }
+
+    .progress {
+      margin-top: 6px;
+      height: 9px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand-2), #22d3ee);
+      transition: width .25s ease;
+    }
+
+    .focus-panel {
+      border: 1px solid #bee3f8;
+      background: #effbff;
+      border-radius: 14px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .focus-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .focus-title { font-size: 14px; font-weight: 800; color: #0f766e; }
+    .focus-sub { font-size: 12px; color: #0e7490; }
+    .focus-list { display: grid; gap: 6px; }
+
+    .focus-item {
+      border: 1px solid #bae6fd;
+      border-radius: 10px;
+      background: #fff;
+      padding: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .focus-item small { color: var(--muted); }
+
+    .linked-filter {
+      margin-top: 8px;
+      border: 1px solid #a5f3fc;
+      background: #ecfeff;
+      color: #0f766e;
+      border-radius: 10px;
+      font-size: 13px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    ul { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .item.done .title { text-decoration: line-through; color: #94a3b8; }
+    .title { font-weight: 700; margin-bottom: 5px; word-break: break-word; }
+
+    .meta { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .tag {
+      border: 1px solid #dbeafe;
+      background: #f8fafc;
+      color: #334155;
+      border-radius: 999px;
+      font-size: 12px;
+      padding: 3px 8px;
+    }
+
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .pin-btn.active {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+    }
+
+    .edit-box {
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      background: #f8fafc;
+      padding: 8px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .edit-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+
+    .empty {
+      margin-top: 10px;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .bottom { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+    .backup-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .manda-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .manda-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .manda-cell {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px;
+      min-height: 170px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 6px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .manda-cell.linkable { cursor: pointer; }
+    .manda-cell.linkable:hover { border-color: #7dd3fc; box-shadow: 0 0 0 2px #e0f2fe inset; }
+
+    .manda-cell.center {
+      background: linear-gradient(135deg, #ecfeff, #eef2ff);
+      border-color: #a5f3fc;
+    }
+
+    .cell-title { font-size: 12px; color: var(--muted); font-weight: 800; }
+
+    .cell-badge {
+      border: 1px solid #bae6fd;
+      background: #f0f9ff;
+      color: #0369a1;
+      border-radius: 999px;
+      font-size: 11px;
+      padding: 3px 8px;
+      width: fit-content;
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ── AI 탭 스타일 ───────────────────────────── */
+    .ai-panel-wrap {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 12px;
+      height: 520px;
+    }
+
+    .ai-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ai-sidebar-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 2px;
+    }
+
+    .ai-mode-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: left;
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color .12s, background .12s;
+    }
+
+    .ai-mode-btn:hover { border-color: #a5b4fc; background: var(--ai-light); }
+    .ai-mode-btn.active { border-color: var(--ai); background: var(--ai-light); color: var(--ai); }
+
+    .ai-mode-btn .mode-icon { font-size: 16px; display: block; margin-bottom: 2px; }
+    .ai-mode-btn .mode-desc { font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+
+    .ai-divider { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
+
+    .ai-quick-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .ai-quick-btn {
+      border: 1px solid #e0e7ff;
+      background: #f5f3ff;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: left;
+      color: #4338ca;
+      cursor: pointer;
+    }
+
+    .ai-quick-btn:hover { background: #ede9fe; }
+
+    .ai-chat-area {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fafbff;
+    }
+
+    .ai-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .ai-chat-header .ai-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ai);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .4; }
+    }
+
+    .ai-chat-header strong { font-size: 14px; color: var(--ai); }
+    .ai-mode-label {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--ai-light);
+      color: var(--ai);
+      border-radius: 999px;
+      padding: 3px 9px;
+    }
+
+    .ai-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-msg {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      max-width: 90%;
+    }
+
+    .ai-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    .ai-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .ai-msg.assistant .ai-avatar { background: var(--ai-light); }
+    .ai-msg.user .ai-avatar { background: #f0fdf4; }
+
+    .ai-bubble {
+      border-radius: 14px;
+      padding: 9px 13px;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .ai-msg.assistant .ai-bubble {
+      background: #fff;
+      border: 1px solid #e0e7ff;
+      color: var(--ink);
+      border-top-left-radius: 4px;
+    }
+
+    .ai-msg.user .ai-bubble {
+      background: var(--ai);
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+
+    .ai-typing {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      padding: 10px 14px;
+    }
+
+    .ai-typing span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--ai);
+      animation: bounce 1.2s infinite;
+    }
+
+    .ai-typing span:nth-child(2) { animation-delay: .2s; }
+    .ai-typing span:nth-child(3) { animation-delay: .4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: .4; }
+      40% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    .ai-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .ai-input-row textarea {
+      flex: 1;
+      min-height: 40px;
+      max-height: 120px;
+      resize: none;
+      border-radius: 10px;
+      font-size: 13px;
+      padding: 9px 11px;
+    }
+
+    .ai-input-row textarea:focus { outline: 2px solid #a5b4fc; border-color: #818cf8; }
+
+    .ai-send-btn {
+      align-self: flex-end;
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+
+    .ai-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .ai-welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      color: var(--muted);
+      gap: 8px;
+    }
+
+    .ai-welcome .ai-icon { font-size: 40px; }
+    .ai-welcome p { margin: 0; font-size: 14px; max-width: 28ch; line-height: 1.5; }
+
+    /* ── 반응형 ─────────────────────────────────── */
+    @media (max-width: 920px) {
+      .todo-add { grid-template-columns: 1fr 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .ai-panel-wrap { grid-template-columns: 1fr; height: auto; }
+      .ai-sidebar { flex-direction: row; flex-wrap: wrap; }
+      .ai-messages { min-height: 260px; max-height: 260px; }
+    }
+
+    @media (max-width: 720px) {
+      .item { grid-template-columns: auto 1fr; }
+      .actions { grid-column: 1 / -1; justify-content: flex-start; }
+      .edit-grid { grid-template-columns: 1fr; }
+      .manda-grid { grid-template-columns: 1fr; }
+      .manda-head { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <h1>Goals Manager</h1>
-    <form id="goalForm">
-        <label for="goalName">Goal Name:</label>
-        <input type="text" id="goalName" required>
+  <main class="app">
+    <section class="top">
+      <div>
+        <h1>Focus Planner</h1>
+        <p class="sub">할일·만다라트·AI 플래너를 한곳에서 관리하세요.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="뷰 전환">
+        <button class="tab-btn active" data-tab="todo"    role="tab" aria-selected="true">할일</button>
+        <button class="tab-btn"        data-tab="mandala" role="tab" aria-selected="false">만다라트</button>
+        <button class="tab-btn"        data-tab="ai"      role="tab" aria-selected="false">✨ AI</button>
+      </div>
+    </section>
 
-        <label for="goalLevel">Goal Level:</label>
-        <select id="goalLevel">
-            <option value="yearly">Yearly</option>
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-        </select>
+    <!-- ══ TODO 탭 ══════════════════════════════════════════════ -->
+    <section id="todoPanel" class="tab-panel active">
+      <div class="panel">
+        <div class="todo-add">
+          <input id="todoText" type="text" placeholder="할 일 입력 (예: 포트폴리오 1페이지 정리)" maxlength="140" />
+          <input id="todoDue" type="date" />
+          <select id="todoPriority">
+            <option value="high">우선순위 높음</option>
+            <option value="mid" selected>우선순위 중간</option>
+            <option value="low">우선순위 낮음</option>
+          </select>
+          <select id="todoCategory">
+            <option value="general" selected>카테고리: 일반</option>
+            <option value="study">카테고리: 공부</option>
+            <option value="work">카테고리: 일</option>
+            <option value="health">카테고리: 건강</option>
+            <option value="mandala">카테고리: 만다라트</option>
+          </select>
+          <button id="addTodoBtn" class="btn-primary">추가</button>
+        </div>
 
-        <label for="parentGoalId">Parent Goal:</label>
-        <select id="parentGoalId">
-            <option value="">None</option>
-            <!-- Options will be populated with parent goals -->
-        </select>
+        <div class="toolbar">
+          <input id="searchInput" type="search" placeholder="할 일 검색" />
+          <select id="sortInput">
+            <option value="created">정렬: 최신 추가순</option>
+            <option value="due">정렬: 마감일 빠른순</option>
+            <option value="priority">정렬: 우선순위순</option>
+          </select>
+          <div id="filterChips" class="chips">
+            <button class="chip active" data-filter="all">전체</button>
+            <button class="chip" data-filter="active">진행중</button>
+            <button class="chip" data-filter="done">완료</button>
+            <button class="chip" data-filter="mandala">만다라트 연동</button>
+          </div>
+        </div>
 
-        <button type="submit">Add Goal</button>
-    </form>
+        <div id="linkedFilterInfo" class="linked-filter" style="display:none;">
+          <span id="linkedFilterText"></span>
+          <button id="clearLinkedFilterBtn" class="btn-ghost">연결 필터 해제</button>
+        </div>
 
-    <div id="goalList">
-        <!-- Goals will be displayed here -->
-    </div>
+        <div id="stats" class="stats">총 0개 / 완료 0개 / 남음 0개</div>
+        <div class="progress"><div id="progressBar" class="bar"></div></div>
+      </div>
 
-    <script>
-        // JavaScript functionality to manage goals and handle parent selection
+      <section class="focus-panel" id="focusPanel">
+        <div class="focus-head">
+          <div>
+            <div class="focus-title">오늘의 3개</div>
+            <div class="focus-sub">TODO 카드의 ⭐ 버튼으로 오늘 할 일을 고정하세요.</div>
+          </div>
+          <button id="focusMoreBtn" class="btn-ghost" style="display:none;">더보기</button>
+        </div>
+        <div id="focusList" class="focus-list"></div>
+      </section>
 
-        // Function to add a new goal
-        document.getElementById('goalForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const goalName = document.getElementById('goalName').value;
-            const goalLevel = document.getElementById('goalLevel').value;
-            const parentGoalId = document.getElementById('parentGoalId').value;
-            // Logic to save goal...
+      <ul id="todoList"></ul>
+      <div id="todoEmpty" class="empty">아직 할 일이 없어요. 만다라트 탭에서 목표를 쪼개서 가져와도 됩니다.</div>
 
-            // Clear form
-            this.reset();
+      <div class="bottom">
+        <button id="markAllBtn" class="btn-ghost">전체 완료</button>
+        <button id="clearDoneBtn" class="btn-ghost">완료만 삭제</button>
+        <button id="clearAllBtn" class="btn-danger">전체 삭제</button>
+      </div>
+
+      <div class="backup-row">
+        <button id="exportBtn" class="btn-ghost">JSON 내보내기</button>
+        <button id="importBtn" class="btn-ghost">JSON 가져오기</button>
+        <input id="importFileInput" type="file" accept="application/json,.json" style="display:none;" />
+      </div>
+    </section>
+
+    <!-- ══ 만다라트 탭 ══════════════════════════════════════════ -->
+    <section id="mandalaPanel" class="tab-panel">
+      <div class="panel">
+        <div class="manda-head">
+          <input id="coreGoalInput" type="text" placeholder="중심 목표 (예: 3개월 안에 취업 포트폴리오 완성)" maxlength="120" />
+          <button id="saveCoreBtn" class="btn-primary">중심 목표 저장</button>
+        </div>
+
+        <div id="mandalaGrid" class="manda-grid"></div>
+
+        <div class="bottom" style="justify-content:flex-start;margin-top:12px;">
+          <button id="addAllMandalaBtn" class="btn-primary">8개 모두 할일로 추가</button>
+          <button id="clearMandalaBtn" class="btn-danger">만다라트 초기화</button>
+        </div>
+
+        <p class="hint">
+          사용법: 중심 목표를 적고 주변 8칸에 실행 아이디어를 작성한 뒤, 각 칸의 할일로 추가를 누르세요.
+          칸을 클릭하면 해당 칸과 연결된 할일만 TODO 탭에서 볼 수 있습니다.
+        </p>
+      </div>
+    </section>
+
+    <!-- ══ AI 탭 ════════════════════════════════════════════════ -->
+    <section id="aiPanel" class="tab-panel">
+      <div class="ai-panel-wrap">
+        <!-- 사이드바: 모드 선택 -->
+        <aside class="ai-sidebar">
+          <div class="ai-sidebar-title">모드</div>
+          <button class="ai-mode-btn active" data-mode="chat">
+            <span class="mode-icon">💬</span>
+            자유 대화
+            <div class="mode-desc">무엇이든 물어보세요</div>
+          </button>
+          <button class="ai-mode-btn" data-mode="suggest">
+            <span class="mode-icon">💡</span>
+            오늘 추천
+            <div class="mode-desc">할일 우선순위 제안</div>
+          </button>
+          <button class="ai-mode-btn" data-mode="weekly-review">
+            <span class="mode-icon">📊</span>
+            주간 리뷰
+            <div class="mode-desc">한 주 성과 분석</div>
+          </button>
+
+          <hr class="ai-divider">
+          <div class="ai-quick-title">빠른 질문</div>
+          <button class="ai-quick-btn" data-quick="오늘 가장 집중해야 할 할일 3개를 골라줘.">🎯 오늘 TOP 3</button>
+          <button class="ai-quick-btn" data-quick="이번 주 내가 달성하지 못한 목표가 있다면 어떻게 개선할 수 있을지 알려줘.">🔄 미완료 개선</button>
+          <button class="ai-quick-btn" data-quick="집중력을 높이는 짧은 루틴을 하나 추천해줘.">⚡ 루틴 추천</button>
+          <button class="ai-quick-btn" data-quick="지금 당장 시작할 수 있는 가장 작은 행동 하나를 알려줘.">🐾 첫 발걸음</button>
+        </aside>
+
+        <!-- 채팅 영역 -->
+        <div class="ai-chat-area">
+          <div class="ai-chat-header">
+            <div class="ai-dot"></div>
+            <strong>PulseHome AI</strong>
+            <span class="ai-mode-label" id="aiModeLabel">자유 대화</span>
+            <button class="btn-ghost" id="clearChatBtn" style="margin-left:8px;padding:5px 10px;font-size:12px;">대화 초기화</button>
+          </div>
+
+          <div class="ai-messages" id="aiMessages">
+            <div class="ai-welcome" id="aiWelcome">
+              <div class="ai-icon">✨</div>
+              <p>안녕하세요! AI 플래너입니다.<br>왼쪽에서 모드를 고르거나 바로 질문해보세요.</p>
+            </div>
+          </div>
+
+          <div class="ai-input-row">
+            <textarea id="aiInput" placeholder="메시지를 입력하세요… (Shift+Enter로 줄바꿈, Enter로 전송)" rows="2"></textarea>
+            <button class="btn-ai ai-send-btn" id="aiSendBtn">전송</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       공통 상수 / 유틸
+    ═══════════════════════════════════════════════════════════ */
+    const STORAGE_KEY = "focus_planner_v3";
+
+    const priorityRank  = { high: 3, mid: 2, low: 1 };
+    const priorityLabel = { high: "높음", mid: "중간", low: "낮음" };
+    const categoryLabel = { general: "일반", study: "공부", work: "일", health: "건강", mandala: "만다라트" };
+
+    const AI_MODE_LABELS = { chat: "자유 대화", suggest: "오늘 추천", "weekly-review": "주간 리뷰" };
+
+    const gridSlots = [
+      { kind: "sub", index: 0 }, { kind: "sub", index: 1 }, { kind: "sub", index: 2 },
+      { kind: "sub", index: 3 }, { kind: "core", index: null },
+      { kind: "sub", index: 4 }, { kind: "sub", index: 5 },
+      { kind: "sub", index: 6 }, { kind: "sub", index: 7 }
+    ];
+
+    /* ─── DOM 참조 ─────────────────────────────────────────── */
+    const els = {
+      tabButtons:         document.querySelectorAll(".tab-btn"),
+      todoPanel:          document.getElementById("todoPanel"),
+      mandalaPanel:       document.getElementById("mandalaPanel"),
+      aiPanel:            document.getElementById("aiPanel"),
+
+      todoText:           document.getElementById("todoText"),
+      todoDue:            document.getElementById("todoDue"),
+      todoPriority:       document.getElementById("todoPriority"),
+      todoCategory:       document.getElementById("todoCategory"),
+      addTodoBtn:         document.getElementById("addTodoBtn"),
+
+      searchInput:        document.getElementById("searchInput"),
+      sortInput:          document.getElementById("sortInput"),
+      filterChips:        document.getElementById("filterChips"),
+      linkedFilterInfo:   document.getElementById("linkedFilterInfo"),
+      linkedFilterText:   document.getElementById("linkedFilterText"),
+      clearLinkedFilterBtn: document.getElementById("clearLinkedFilterBtn"),
+
+      stats:              document.getElementById("stats"),
+      progressBar:        document.getElementById("progressBar"),
+      todoList:           document.getElementById("todoList"),
+      todoEmpty:          document.getElementById("todoEmpty"),
+
+      focusPanel:         document.getElementById("focusPanel"),
+      focusList:          document.getElementById("focusList"),
+      focusMoreBtn:       document.getElementById("focusMoreBtn"),
+
+      markAllBtn:         document.getElementById("markAllBtn"),
+      clearDoneBtn:       document.getElementById("clearDoneBtn"),
+      clearAllBtn:        document.getElementById("clearAllBtn"),
+
+      exportBtn:          document.getElementById("exportBtn"),
+      importBtn:          document.getElementById("importBtn"),
+      importFileInput:    document.getElementById("importFileInput"),
+
+      coreGoalInput:      document.getElementById("coreGoalInput"),
+      saveCoreBtn:        document.getElementById("saveCoreBtn"),
+      mandalaGrid:        document.getElementById("mandalaGrid"),
+      addAllMandalaBtn:   document.getElementById("addAllMandalaBtn"),
+      clearMandalaBtn:    document.getElementById("clearMandalaBtn"),
+
+      // AI
+      aiMessages:         document.getElementById("aiMessages"),
+      aiWelcome:          document.getElementById("aiWelcome"),
+      aiInput:            document.getElementById("aiInput"),
+      aiSendBtn:          document.getElementById("aiSendBtn"),
+      clearChatBtn:       document.getElementById("clearChatBtn"),
+      aiModeLabel:        document.getElementById("aiModeLabel"),
+    };
+
+    /* ─── 앱 상태 ──────────────────────────────────────────── */
+    const state = loadState();
+
+    // AI 런타임 상태 (비지속)
+    const aiState = {
+      mode: "chat",
+      history: [],   // { role, content }[]
+      loading: false
+    };
+
+    /* ══════════════════════════════════════════════════════════
+       초기화
+    ══════════════════════════════════════════════════════════ */
+    (function initialize() {
+      bindTabSwitching();
+      bindTodoEvents();
+      bindMandalaEvents();
+      bindBackupEvents();
+      bindAiEvents();
+      renderAll();
+    })();
+
+    /* ══════════════════════════════════════════════════════════
+       탭 전환
+    ══════════════════════════════════════════════════════════ */
+    function bindTabSwitching() {
+      for (const btn of els.tabButtons) {
+        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab));
+      }
+    }
+
+    function setActiveTab(target) {
+      for (const b of els.tabButtons) {
+        const active = b.dataset.tab === target;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-selected", String(active));
+      }
+      els.todoPanel.classList.toggle("active",    target === "todo");
+      els.mandalaPanel.classList.toggle("active", target === "mandala");
+      els.aiPanel.classList.toggle("active",      target === "ai");
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       AI 패널
+    ══════════════════════════════════════════════════════════ */
+    function bindAiEvents() {
+      // 모드 선택
+      document.querySelectorAll(".ai-mode-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".ai-mode-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          aiState.mode = btn.dataset.mode;
+          els.aiModeLabel.textContent = AI_MODE_LABELS[aiState.mode] || aiState.mode;
         });
+      });
 
-        // Function to load parent goals into the selection (if applicable)
-        function loadParentGoals() {
-            // Logic to fetch and display parent goals
+      // 빠른 질문
+      document.querySelectorAll(".ai-quick-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          els.aiInput.value = btn.dataset.quick;
+          sendAiMessage();
+        });
+      });
+
+      // 전송 버튼
+      els.aiSendBtn.addEventListener("click", sendAiMessage);
+
+      // Enter 전송 (Shift+Enter 줄바꿈)
+      els.aiInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendAiMessage();
+        }
+      });
+
+      // 대화 초기화
+      els.clearChatBtn.addEventListener("click", () => {
+        aiState.history = [];
+        els.aiMessages.innerHTML = "";
+        els.aiMessages.appendChild(buildWelcome());
+      });
+    }
+
+    async function sendAiMessage() {
+      const text = els.aiInput.value.trim();
+      if (!text || aiState.loading) return;
+
+      // 웰컴 메시지 제거
+      const welcome = els.aiMessages.querySelector(".ai-welcome");
+      if (welcome) welcome.remove();
+
+      // 사용자 메시지 표시
+      appendMessage("user", text);
+      els.aiInput.value = "";
+      aiState.history.push({ role: "user", content: text });
+
+      // 로딩 표시
+      aiState.loading = true;
+      els.aiSendBtn.disabled = true;
+      const typingEl = appendTyping();
+
+      try {
+        // 할일 컨텍스트 자동 첨부 (suggest 모드일 때)
+        let userMessage = text;
+        if (aiState.mode === "suggest") {
+          const todoSummary = buildTodoSummary();
+          if (todoSummary) userMessage = `${text}\n\n[현재 할일 목록]\n${todoSummary}`;
         }
 
-        loadParentGoals();
-    </script>
+        const systemPrompt = buildSystemPrompt();
+
+        const response = await fetch("/api/ai", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: aiState.mode,
+            payload: {
+              message: userMessage,
+              systemPrompt,
+              history: aiState.history.slice(0, -1)  // 마지막 user 메시지는 payload.message로 전달
+            }
+          })
+        });
+
+        typingEl.remove();
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({ error: response.statusText }));
+          throw new Error(err.error || `서버 오류 ${response.status}`);
+        }
+
+        const data = await response.json();
+        const reply = data.reply || "응답을 받지 못했어요.";
+
+        aiState.history.push({ role: "assistant", content: reply });
+        appendMessage("assistant", reply);
+
+      } catch (err) {
+        typingEl.remove();
+        appendError(`AI 요청 실패: ${err.message}`);
+        // 실패한 user 메시지는 히스토리에서 제거
+        aiState.history.pop();
+      } finally {
+        aiState.loading = false;
+        els.aiSendBtn.disabled = false;
+        els.aiInput.focus();
+      }
+    }
+
+    function buildSystemPrompt() {
+      const base = `당신은 PulseHome의 AI 플래너 어시스턴트입니다.
+사용자의 생산성과 목표 달성을 돕는 친근하고 동기부여가 되는 한국어 코치입니다.
+구체적이고 실행 가능한 짧은 답변을 주세요 (300자 이내).`;
+
+      if (aiState.mode === "weekly-review") {
+        return `${base}\n답변은 다음 섹션으로 구성하세요: 전체 평가, 잘한 점, 개선할 점, 다음 주 제안, 이번 주 MVP.`;
+      }
+      return base;
+    }
+
+    function buildTodoSummary() {
+      if (!state.todo.items.length) return "";
+      return state.todo.items
+        .filter(item => !item.done)
+        .slice(0, 10)
+        .map(item => `- [${priorityLabel[item.priority]}] ${item.text}${item.dueDate ? ` (마감: ${item.dueDate})` : ""}`)
+        .join("\n");
+    }
+
+    /* ─── AI UI 빌더 ──────────────────────────────────────── */
+    function appendMessage(role, content) {
+      const msg = document.createElement("div");
+      msg.className = `ai-msg ${role}`;
+
+      const avatar = document.createElement("div");
+      avatar.className = "ai-avatar";
+      avatar.textContent = role === "assistant" ? "🤖" : "🙋";
+
+      const bubble = document.createElement("div");
+      bubble.className = "ai-bubble";
+      bubble.textContent = content;
+
+      msg.append(avatar, bubble);
+      els.aiMessages.append(msg);
+      els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+      return msg;
+    }
+
+    function appendTyping() {
+      const wrap = document.createElement("div");
+      wrap.className = "ai-msg assistant";
+
+      const avatar = document.createElement("div");
+      avatar.className = "ai-avatar";
+      avatar.textContent = "🤖";
+
+      const typing = document.createElement("div");
+      typing.className = "ai-typing";
+      typing.innerHTML = "<span></span><span></span><span></span>";
+
+      wrap.append(avatar, typing);
+      els.aiMessages.append(wrap);
+      els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+      return wrap;
+    }
+
+    function appendError(msg) {
+      const el = document.createElement("div");
+      el.className = "ai-error";
+      el.textContent = msg;
+      els.aiMessages.append(el);
+      els.aiMessages.scrollTop = els.aiMessages.scrollHeight;
+    }
+
+    function buildWelcome() {
+      const div = document.createElement("div");
+      div.className = "ai-welcome";
+      div.innerHTML = `<div class="ai-icon">✨</div><p>안녕하세요! AI 플래너입니다.<br>왼쪽에서 모드를 고르거나 바로 질문해보세요.</p>`;
+      return div;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       TODO 탭
+    ══════════════════════════════════════════════════════════ */
+    function bindTodoEvents() {
+      els.addTodoBtn.addEventListener("click", addTodoFromInput);
+      els.todoText.addEventListener("keydown", (e) => { if (e.key === "Enter") addTodoFromInput(); });
+
+      els.searchInput.addEventListener("input", (e) => {
+        state.todo.search = e.target.value.trim().toLowerCase();
+        state.todo.linkedCellFilter = null;
+        renderTodo();
+      });
+
+      els.sortInput.addEventListener("change", (e) => {
+        state.todo.sort = e.target.value;
+        renderTodo();
+      });
+
+      els.filterChips.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-filter]");
+        if (!btn) return;
+        state.todo.filter = btn.dataset.filter;
+        state.todo.linkedCellFilter = null;
+        state.todo.editingId = null;
+        syncFilterChips();
+        renderTodo();
+      });
+
+      els.clearLinkedFilterBtn.addEventListener("click", () => {
+        state.todo.linkedCellFilter = null;
+        renderTodo();
+      });
+
+      els.focusMoreBtn.addEventListener("click", () => {
+        state.todo.focusExpanded = !state.todo.focusExpanded;
+        renderFocusPanel();
+      });
+
+      els.markAllBtn.addEventListener("click", () => {
+        if (!state.todo.items.length) return;
+        state.todo.items = state.todo.items.map(item => ({ ...item, done: true }));
+        persist(); renderAll();
+      });
+
+      els.clearDoneBtn.addEventListener("click", () => {
+        const before = state.todo.items.length;
+        state.todo.items = state.todo.items.filter(item => !item.done);
+        if (before === state.todo.items.length) { alert("완료된 항목이 없습니다."); return; }
+        if (state.todo.editingId && !state.todo.items.some(item => item.id === state.todo.editingId)) state.todo.editingId = null;
+        persist(); renderAll();
+      });
+
+      els.clearAllBtn.addEventListener("click", () => {
+        if (!state.todo.items.length) return;
+        if (!confirm("전체 항목을 삭제할까요?")) return;
+        state.todo.items = [];
+        state.todo.editingId = null;
+        persist(); renderAll();
+      });
+    }
+
+    function addTodoFromInput() {
+      const text = els.todoText.value.trim();
+      if (!text) { els.todoText.focus(); return; }
+
+      state.todo.items.unshift({
+        id: crypto.randomUUID(),
+        text,
+        dueDate: els.todoDue.value || null,
+        priority: els.todoPriority.value,
+        category: els.todoCategory.value,
+        done: false,
+        today: false,
+        source: null,
+        createdAt: Date.now()
+      });
+
+      els.todoText.value = "";
+      persist(); renderAll();
+      els.todoText.focus();
+    }
+
+    function addTodoFromMandala(text, cellIndex) {
+      state.todo.items.unshift({
+        id: crypto.randomUUID(),
+        text,
+        dueDate: null,
+        priority: "mid",
+        category: "mandala",
+        done: false,
+        today: false,
+        source: { type: "mandala", cellIndex, core: state.mandala.core || null },
+        createdAt: Date.now()
+      });
+    }
+
+    function toggleTodo(id) {
+      state.todo.items = state.todo.items.map(item => item.id === id ? { ...item, done: !item.done } : item);
+      persist(); renderAll();
+    }
+
+    function toggleToday(id) {
+      state.todo.items = state.todo.items.map(item => item.id === id ? { ...item, today: !item.today } : item);
+      persist(); renderAll();
+    }
+
+    function startInlineEdit(id) { state.todo.editingId = id; renderTodo(); }
+
+    function saveInlineEdit(id, liElement) {
+      const textInput     = liElement.querySelector('[data-edit="text"]');
+      const dueInput      = liElement.querySelector('[data-edit="due"]');
+      const priorityInput = liElement.querySelector('[data-edit="priority"]');
+      const categoryInput = liElement.querySelector('[data-edit="category"]');
+
+      const text = textInput.value.trim();
+      if (!text) { alert("할 일 텍스트를 입력하세요."); textInput.focus(); return; }
+
+      state.todo.items = state.todo.items.map(item => {
+        if (item.id !== id) return item;
+        return { ...item, text, dueDate: dueInput.value || null, priority: priorityInput.value, category: categoryInput.value };
+      });
+
+      state.todo.editingId = null;
+      persist(); renderAll();
+    }
+
+    function cancelInlineEdit() { state.todo.editingId = null; renderTodo(); }
+
+    function deleteTodo(id) {
+      state.todo.items = state.todo.items.filter(item => item.id !== id);
+      if (state.todo.editingId === id) state.todo.editingId = null;
+      persist(); renderAll();
+    }
+
+    /* ── 렌더링 ─────────────────────────────────────────────── */
+    function renderAll() { renderTodo(); renderMandala(); }
+
+    function renderTodo() {
+      syncFilterChips();
+      renderLinkedFilterInfo();
+      renderFocusPanel();
+
+      const visible = getVisibleTodos();
+      els.todoList.innerHTML = "";
+
+      visible.forEach(item => {
+        const li = document.createElement("li");
+        li.className = `item ${item.done ? "done" : ""}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = item.done;
+        checkbox.addEventListener("change", () => toggleTodo(item.id));
+
+        const body = document.createElement("div");
+
+        if (state.todo.editingId === item.id) {
+          const box = document.createElement("div");
+          box.className = "edit-box";
+
+          const textInput = document.createElement("input");
+          textInput.value = item.text;
+          textInput.maxLength = 140;
+          textInput.setAttribute("data-edit", "text");
+
+          const grid = document.createElement("div");
+          grid.className = "edit-grid";
+
+          const dueInput = document.createElement("input");
+          dueInput.type = "date";
+          dueInput.value = item.dueDate || "";
+          dueInput.setAttribute("data-edit", "due");
+
+          const priorityInput = document.createElement("select");
+          priorityInput.setAttribute("data-edit", "priority");
+          priorityInput.innerHTML = `<option value="high">우선순위 높음</option><option value="mid">우선순위 중간</option><option value="low">우선순위 낮음</option>`;
+          priorityInput.value = item.priority;
+
+          const categoryInput = document.createElement("select");
+          categoryInput.setAttribute("data-edit", "category");
+          categoryInput.innerHTML = `<option value="general">카테고리: 일반</option><option value="study">카테고리: 공부</option><option value="work">카테고리: 일</option><option value="health">카테고리: 건강</option><option value="mandala">카테고리: 만다라트</option>`;
+          categoryInput.value = item.category;
+
+          grid.append(dueInput, priorityInput, categoryInput);
+
+          const editActions = document.createElement("div");
+          editActions.className = "actions";
+          const saveBtn = document.createElement("button");
+          saveBtn.className = "btn-primary"; saveBtn.textContent = "저장";
+          saveBtn.addEventListener("click", () => saveInlineEdit(item.id, li));
+          const cancelBtn = document.createElement("button");
+          cancelBtn.className = "btn-ghost"; cancelBtn.textContent = "취소";
+          cancelBtn.addEventListener("click", cancelInlineEdit);
+
+          editActions.append(saveBtn, cancelBtn);
+          box.append(textInput, grid, editActions);
+          body.append(box);
+        } else {
+          const title = document.createElement("div");
+          title.className = "title";
+          title.textContent = item.text;
+
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          meta.append(
+            makeTag(`우선순위 ${priorityLabel[item.priority]}`),
+            makeTag(`카테고리 ${categoryLabel[item.category] || "일반"}`),
+            makeTag(`마감 ${formatDate(item.dueDate)}`)
+          );
+          if (item.source?.type === "mandala") {
+            meta.append(makeTag(`만다라트 ${item.source.cellIndex + 1}번`, true));
+          }
+          body.append(title, meta);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const pinBtn = document.createElement("button");
+        pinBtn.className = `btn-ghost pin-btn ${item.today ? "active" : ""}`;
+        pinBtn.textContent = item.today ? "⭐ 오늘" : "☆ 오늘";
+        pinBtn.addEventListener("click", () => toggleToday(item.id));
+
+        if (state.todo.editingId !== item.id) {
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn-ghost"; editBtn.textContent = "수정";
+          editBtn.addEventListener("click", () => startInlineEdit(item.id));
+          actions.append(editBtn);
+        }
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-danger"; delBtn.textContent = "삭제";
+        delBtn.addEventListener("click", () => deleteTodo(item.id));
+
+        actions.append(pinBtn, delBtn);
+        li.append(checkbox, body, actions);
+        els.todoList.append(li);
+      });
+
+      const total  = state.todo.items.length;
+      const done   = state.todo.items.filter(item => item.done).length;
+      const remain = total - done;
+
+      els.stats.textContent = `총 ${total}개 / 완료 ${done}개 / 남음 ${remain}개`;
+      els.progressBar.style.width = total ? `${Math.round((done / total) * 100)}%` : "0%";
+      els.todoEmpty.style.display = visible.length === 0 ? "block" : "none";
+    }
+
+    function renderLinkedFilterInfo() {
+      if (state.todo.linkedCellFilter === null) { els.linkedFilterInfo.style.display = "none"; return; }
+      els.linkedFilterText.textContent = `만다라트 ${state.todo.linkedCellFilter + 1}번 칸과 연결된 투두만 표시 중`;
+      els.linkedFilterInfo.style.display = "flex";
+    }
+
+    function renderFocusPanel() {
+      const todayItems = state.todo.items
+        .filter(item => item.today)
+        .sort((a, b) => {
+          if (a.done !== b.done) return Number(a.done) - Number(b.done);
+          if (priorityRank[a.priority] !== priorityRank[b.priority]) return priorityRank[b.priority] - priorityRank[a.priority];
+          return b.createdAt - a.createdAt;
+        });
+
+      els.focusList.innerHTML = "";
+
+      if (!todayItems.length) {
+        const empty = document.createElement("div");
+        empty.className = "focus-item";
+        empty.innerHTML = "<span>오늘 항목이 없습니다.</span><small>카드의 ☆ 오늘 버튼을 눌러보세요.</small>";
+        els.focusList.append(empty);
+        els.focusMoreBtn.style.display = "none";
+        return;
+      }
+
+      const hiddenCount = Math.max(todayItems.length - 3, 0);
+      const visible = state.todo.focusExpanded ? todayItems : todayItems.slice(0, 3);
+
+      visible.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "focus-item";
+        const left = document.createElement("div");
+        left.innerHTML = `<strong>${escapeHtml(item.text)}</strong><br><small>${categoryLabel[item.category] || "일반"} · ${priorityLabel[item.priority]} · 마감 ${formatDate(item.dueDate)}</small>`;
+        const right = document.createElement("small");
+        right.textContent = item.done ? "완료" : "진행중";
+        row.append(left, right);
+        els.focusList.append(row);
+      });
+
+      if (hiddenCount > 0) {
+        els.focusMoreBtn.style.display = "inline-flex";
+        els.focusMoreBtn.textContent = state.todo.focusExpanded ? "접기" : `더보기 (+${hiddenCount})`;
+      } else {
+        els.focusMoreBtn.style.display = "none";
+      }
+    }
+
+    function makeTag(text, highlight = false) {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      if (highlight) { tag.style.background = "#ecfeff"; tag.style.borderColor = "#99f6e4"; tag.style.color = "#0f766e"; }
+      tag.textContent = text;
+      return tag;
+    }
+
+    function getVisibleTodos() {
+      let list = [...state.todo.items];
+      if (state.todo.search) list = list.filter(item => item.text.toLowerCase().includes(state.todo.search));
+      if (state.todo.filter === "active")  list = list.filter(item => !item.done);
+      if (state.todo.filter === "done")    list = list.filter(item => item.done);
+      if (state.todo.filter === "mandala") list = list.filter(item => item.category === "mandala");
+      if (state.todo.linkedCellFilter !== null) {
+        list = list.filter(item => item.source?.type === "mandala" && item.source.cellIndex === state.todo.linkedCellFilter);
+      }
+      if (state.todo.sort === "created")  list.sort((a, b) => b.createdAt - a.createdAt);
+      else if (state.todo.sort === "due") list.sort((a, b) => compareDue(a.dueDate, b.dueDate));
+      else if (state.todo.sort === "priority") list.sort((a, b) => priorityRank[b.priority] - priorityRank[a.priority]);
+      return list;
+    }
+
+    function compareDue(a, b) {
+      if (!a && !b) return 0;
+      if (!a) return 1;
+      if (!b) return -1;
+      return a.localeCompare(b);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "없음";
+      return new Date(`${dateStr}T00:00:00`).toLocaleDateString("ko-KR", { month: "short", day: "numeric" });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       만다라트 탭
+    ══════════════════════════════════════════════════════════ */
+    function bindMandalaEvents() {
+      els.saveCoreBtn.addEventListener("click", () => {
+        state.mandala.core = els.coreGoalInput.value.trim();
+        persist(); renderMandala();
+      });
+
+      els.addAllMandalaBtn.addEventListener("click", () => {
+        let added = 0;
+        state.mandala.cells.forEach((text, i) => {
+          if (text.trim()) { addTodoFromMandala(text.trim(), i); added++; }
+        });
+        if (!added) { alert("먼저 만다라트 칸에 내용을 입력하세요."); return; }
+        persist(); renderAll();
+        alert(`${added}개 항목을 할일에 추가했습니다.`);
+      });
+
+      els.clearMandalaBtn.addEventListener("click", () => {
+        if (!confirm("만다라트 내용을 초기화할까요?")) return;
+        state.mandala.core = "";
+        state.mandala.cells = Array(8).fill("");
+        persist(); renderMandala();
+      });
+    }
+
+    function getMandalaTodoStats() {
+      const stats = Array.from({ length: 8 }, () => ({ total: 0, done: 0 }));
+      state.todo.items.forEach(item => {
+        if (!item.source || item.source.type !== "mandala") return;
+        const idx = item.source.cellIndex;
+        if (typeof idx !== "number" || idx < 0 || idx > 7) return;
+        stats[idx].total++;
+        if (item.done) stats[idx].done++;
+      });
+      return stats;
+    }
+
+    function jumpToLinkedTodos(cellIndex) {
+      state.todo.filter = "mandala";
+      state.todo.linkedCellFilter = cellIndex;
+      state.todo.editingId = null;
+      syncFilterChips();
+      setActiveTab("todo");
+      renderTodo();
+    }
+
+    function renderMandala() {
+      const stats = getMandalaTodoStats();
+      els.coreGoalInput.value = state.mandala.core;
+      els.mandalaGrid.innerHTML = "";
+
+      gridSlots.forEach(slot => {
+        const cell = document.createElement("article");
+        cell.className = `manda-cell ${slot.kind === "core" ? "center" : ""}`;
+
+        const title = document.createElement("div");
+        title.className = "cell-title";
+
+        if (slot.kind === "core") {
+          title.textContent = "중심 목표";
+          const text = document.createElement("div");
+          text.style.cssText = "font-weight:800;line-height:1.4;word-break:break-word;";
+          text.textContent = state.mandala.core || "중심 목표를 먼저 입력해보세요.";
+          cell.append(title, document.createElement("div"), text, document.createElement("div"));
+        } else {
+          title.textContent = `확장 목표 ${slot.index + 1}`;
+
+          const badge = document.createElement("div");
+          badge.className = "cell-badge";
+          badge.textContent = `연결된 투두 ${stats[slot.index].total}개 / 완료 ${stats[slot.index].done}개`;
+
+          const textarea = document.createElement("textarea");
+          textarea.placeholder = "실행 아이디어 입력";
+          textarea.value = state.mandala.cells[slot.index];
+          textarea.addEventListener("input", (e) => {
+            state.mandala.cells[slot.index] = e.target.value;
+            persist();
+          });
+
+          const addBtn = document.createElement("button");
+          addBtn.className = "btn-primary"; addBtn.textContent = "할일로 추가";
+          addBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const text = state.mandala.cells[slot.index].trim();
+            if (!text) { alert("먼저 내용을 입력하세요."); return; }
+            addTodoFromMandala(text, slot.index);
+            persist(); renderAll();
+            alert("할일 탭에 추가했습니다.");
+          });
+
+          cell.classList.add("linkable");
+          cell.addEventListener("click", (e) => {
+            if (e.target.closest("textarea") || e.target.closest("button")) return;
+            jumpToLinkedTodos(slot.index);
+          });
+
+          cell.append(title, badge, textarea, addBtn);
+        }
+
+        els.mandalaGrid.append(cell);
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       백업
+    ══════════════════════════════════════════════════════════ */
+    function bindBackupEvents() {
+      els.exportBtn.addEventListener("click", exportJson);
+      els.importBtn.addEventListener("click", () => { els.importFileInput.value = ""; els.importFileInput.click(); });
+      els.importFileInput.addEventListener("change", importJsonFile);
+    }
+
+    function exportJson() {
+      const blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), storageKey: STORAGE_KEY, data: state }, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `focus-planner-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click(); URL.revokeObjectURL(url);
+    }
+
+    async function importJsonFile(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const data = parsed?.data ?? parsed;
+        const normalized = normalizeImportedState(data);
+        if (!normalized) { alert("JSON 형식이 올바르지 않습니다."); return; }
+        state.todo = normalized.todo;
+        state.mandala = normalized.mandala;
+        persist(); renderAll();
+        alert("데이터를 가져왔습니다.");
+      } catch { alert("JSON 파일을 읽는 중 오류가 발생했습니다."); }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       상태 관리
+    ══════════════════════════════════════════════════════════ */
+    function syncFilterChips() {
+      for (const chip of els.filterChips.querySelectorAll("button")) {
+        chip.classList.toggle("active", chip.dataset.filter === state.todo.filter);
+      }
+    }
+
+    function normalizeImportedState(value) {
+      if (!value || typeof value !== "object") return null;
+      return {
+        todo: {
+          items: normalizeTodoItems(value.todo?.items),
+          search: "", filter: "all",
+          sort: ["created", "due", "priority"].includes(value.todo?.sort) ? value.todo.sort : "created",
+          linkedCellFilter: null, editingId: null, focusExpanded: false
+        },
+        mandala: {
+          core: typeof value.mandala?.core === "string" ? value.mandala.core : "",
+          cells: normalizeCells(value.mandala?.cells)
+        }
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return defaultState();
+        return {
+          todo: {
+            items: normalizeTodoItems(parsed.todo?.items),
+            search: "",
+            filter: ["all","active","done","mandala"].includes(parsed.todo?.filter) ? parsed.todo.filter : "all",
+            sort: ["created","due","priority"].includes(parsed.todo?.sort) ? parsed.todo.sort : "created",
+            linkedCellFilter: null, editingId: null, focusExpanded: false
+          },
+          mandala: {
+            core: typeof parsed.mandala?.core === "string" ? parsed.mandala.core : "",
+            cells: normalizeCells(parsed.mandala?.cells)
+          }
+        };
+      } catch { return defaultState(); }
+    }
+
+    function normalizeTodoItems(value) {
+      if (!Array.isArray(value)) return [];
+      return value
+        .filter(item => item && typeof item.id === "string" && typeof item.text === "string")
+        .map(item => ({
+          id: item.id, text: item.text,
+          dueDate: typeof item.dueDate === "string" && item.dueDate ? item.dueDate : null,
+          priority: ["high","mid","low"].includes(item.priority) ? item.priority : "mid",
+          category: ["general","study","work","health","mandala"].includes(item.category) ? item.category : "general",
+          done: Boolean(item.done), today: Boolean(item.today),
+          source: item.source && typeof item.source === "object" ? item.source : null,
+          createdAt: typeof item.createdAt === "number" ? item.createdAt : Date.now()
+        }));
+    }
+
+    function normalizeCells(value) {
+      if (!Array.isArray(value)) return Array(8).fill("");
+      const result = Array(8).fill("");
+      for (let i = 0; i < 8; i++) result[i] = typeof value[i] === "string" ? value[i] : "";
+      return result;
+    }
+
+    function defaultState() {
+      return {
+        todo: { items: [], search: "", filter: "all", sort: "created", linkedCellFilter: null, editingId: null, focusExpanded: false },
+        mandala: { core: "", cells: Array(8).fill("") }
+      };
+    }
+
+    function persist() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function escapeHtml(value) {
+      return value.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    }
+  </script>
 </body>
 </html>
