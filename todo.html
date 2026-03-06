@@ -396,6 +396,65 @@
       border: 0;
     }
 
+
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .mandalart-form {
+      display: grid;
+      gap: 8px;
+    }
+
+    .mandalart-board-wrap {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .mandalart-board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(90px, 1fr));
+      gap: 8px;
+      min-width: 320px;
+      margin-top: 8px;
+    }
+
+    .mandalart-cell {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+      display: grid;
+      gap: 6px;
+      min-height: 128px;
+    }
+
+    .mandalart-cell.center {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+    }
+
+    .cell-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .cell-input {
+      min-height: 62px;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .cell-link {
+      min-height: 36px;
+      font-size: 13px;
+    }
+
     @media (max-width: 720px) {
       .app { padding: 14px; }
       .ai-dialog {
@@ -404,6 +463,7 @@
         border-radius: 12px 12px 0 0;
       }
       .label { max-width: 200px; }
+      .mandalart-board { min-width: 300px; }
     }
   </style>
 </head>
@@ -527,6 +587,19 @@
         <div class="card">
           <div class="card-title">월간 목표 목록</div>
           <div class="list" id="monthlyGoalList"></div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div class="card-title" style="margin-bottom:0;">만다라트</div>
+            <button class="btn-primary" id="addMandalartBtn">만다라트 추가</button>
+          </div>
+          <div class="mandalart-form" style="margin-bottom:10px;">
+            <input id="mandalartTitle" type="text" placeholder="상위 목표 제목" maxlength="120" />
+            <input id="mandalartDue" type="date" />
+            <textarea class="cell-input" id="mandalartCenter" placeholder="핵심 목표(가운데 칸)"></textarea>
+          </div>
+          <div class="list" id="mandalartList"></div>
         </div>
       </div>
     </section>
@@ -654,6 +727,7 @@
         tasks: [],
         routines: [],
         goals: [],
+        mandalarts: [],
         ai: {
           dailyInsight: '',
           dailyInsightDate: '',
@@ -683,9 +757,51 @@
       };
     }
 
+
+    function normalizeMandalartCell(cell, fallbackText = '') {
+      return {
+        id: String(cell?.id || uid()),
+        text: String(cell?.text ?? cell?.title ?? cell?.value ?? fallbackText ?? '').trim(),
+        linkedGoalId: String(cell?.linkedGoalId || cell?.goalId || ''),
+        linkedTodoIds: Array.isArray(cell?.linkedTodoIds)
+          ? cell.linkedTodoIds.map(String).filter(Boolean)
+          : Array.isArray(cell?.todoIds)
+            ? cell.todoIds.map(String).filter(Boolean)
+            : []
+      };
+    }
+
+    function normalizeMandalart(item, idx = 0) {
+      const sourceCells = Array.isArray(item?.cells)
+        ? item.cells
+        : Array.isArray(item?.subGoals)
+          ? item.subGoals
+          : Array.isArray(item?.items)
+            ? item.items
+            : Array.isArray(item?.details)
+              ? item.details
+              : [];
+      const centerText = String(item?.centerText || item?.coreGoal || item?.title || '').trim();
+      const cells = [];
+      for (let i = 0; i < 9; i += 1) {
+        const cell = sourceCells[i] || {};
+        const fallback = i === 4 ? centerText : '';
+        cells.push(normalizeMandalartCell(cell, fallback));
+      }
+      if (!cells[4].text) cells[4].text = centerText;
+      return {
+        id: String(item?.id || uid()),
+        title: String(item?.title || item?.name || cells[4].text || `만다라트 ${idx + 1}`).trim(),
+        dueDate: normalizeDateText(item?.dueDate || item?.deadline || item?.targetDate),
+        cells,
+        collapsed: !!item?.collapsed,
+        createdAt: Number(item?.createdAt) || Date.now()
+      };
+    }
+
     function loadState() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pulsehome_personal_os_v2');
+        const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('pulsehome_personal_os_v2') || localStorage.getItem('focus_planner_v3');
         if (!raw) return defaultState();
         const p = JSON.parse(raw);
         const d = defaultState();
@@ -705,6 +821,32 @@
             createdAt: Number(r.createdAt) || Date.now()
           })).filter(r => r.id && r.title) : [],
           goals: Array.isArray(p.goals) ? p.goals.map(normalizeGoal).filter(g => g.id && g.title) : [],
+          mandalarts: (() => {
+            const legacy = p.mandalarts || p.mandalart || p.mandalat || p.goalMandalarts;
+            const fromArray = Array.isArray(legacy)
+              ? legacy
+              : [];
+            const fromObject = p.mandala && typeof p.mandala === 'object' && !Array.isArray(p.mandala)
+              ? (() => {
+                const legacyCells = Array.isArray(p.mandala.cells) ? p.mandala.cells : [];
+                const centerText = String(p.mandala.centerText || p.mandala.coreGoal || p.mandala.core || '').trim();
+                const cells = Array.from({ length: 9 }).map((_, index) => ({ text: String(legacyCells[index] || '').trim() }));
+                if (centerText) cells[4].text = centerText;
+                return [{
+                  id: p.mandala.id,
+                  title: p.mandala.title || centerText || '복구된 만다라트',
+                  dueDate: p.mandala.dueDate || p.mandala.deadline,
+                  cells,
+                  createdAt: p.mandala.createdAt
+                }];
+              })()
+              : Array.isArray(p.mandala)
+                ? p.mandala
+                : [];
+            return [...fromArray, ...fromObject]
+              .map((item, idx) => normalizeMandalart(item, idx))
+              .filter(m => m.id && m.title);
+          })(),
           ai: {
             dailyInsight: String(p.ai?.dailyInsight || ''),
             dailyInsightDate: String(p.ai?.dailyInsightDate || ''),
@@ -735,6 +877,7 @@
         ...task,
         dueDate: normalizeDateText(task.dueDate) || today()
       }));
+      state.mandalarts = (Array.isArray(state.mandalarts) ? state.mandalarts : []).map((item, idx) => normalizeMandalart(item, idx));
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
@@ -904,6 +1047,81 @@
       renderStats();
     }
 
+
+    function addMandalart() {
+      const titleInput = document.getElementById('mandalartTitle').value.trim();
+      const dueDate = normalizeDateText(document.getElementById('mandalartDue').value);
+      const centerInput = document.getElementById('mandalartCenter').value.trim();
+      if (!titleInput && !centerInput) return;
+      const title = titleInput || centerInput;
+      const center = centerInput || titleInput;
+
+      const cells = Array.from({ length: 9 }).map((_, idx) => ({
+        id: uid(),
+        text: idx === 4 ? center : '',
+        linkedGoalId: '',
+        linkedTodoIds: []
+      }));
+
+      state.mandalarts.unshift({
+        id: uid(),
+        title,
+        dueDate,
+        cells,
+        collapsed: false,
+        createdAt: Date.now()
+      });
+
+      document.getElementById('mandalartTitle').value = '';
+      document.getElementById('mandalartDue').value = '';
+      document.getElementById('mandalartCenter').value = '';
+      saveState();
+      renderGoals();
+    }
+
+    function saveMandalart(id) {
+      const item = state.mandalarts.find(m => m.id === id);
+      if (!item) return;
+      const titleInput = document.getElementById(`mandalart-title-${id}`);
+      const dueInput = document.getElementById(`mandalart-due-${id}`);
+      const nextTitle = titleInput ? titleInput.value.trim() : item.title;
+      if (!nextTitle) return;
+      item.title = nextTitle;
+      item.dueDate = normalizeDateText(dueInput?.value) || null;
+
+      item.cells = item.cells.map((cell, idx) => {
+        const textEl = document.getElementById(`mandalart-cell-${id}-${idx}`);
+        const goalEl = document.getElementById(`mandalart-goal-${id}-${idx}`);
+        const todoEl = document.getElementById(`mandalart-todo-${id}-${idx}`);
+        const nextGoal = goalEl ? goalEl.value : '';
+        const nextTodo = todoEl ? todoEl.value : '';
+        return {
+          ...cell,
+          text: textEl ? textEl.value.trim() : cell.text,
+          linkedGoalId: nextGoal ? nextGoal : cell.linkedGoalId,
+          linkedTodoIds: nextTodo ? [nextTodo] : (cell.linkedTodoIds || [])
+        };
+      });
+
+      if (!item.cells[4].text) item.cells[4].text = item.title;
+      saveState();
+      renderGoals();
+    }
+
+    function removeMandalart(id) {
+      state.mandalarts = state.mandalarts.filter(m => m.id !== id);
+      saveState();
+      renderGoals();
+    }
+
+    function toggleMandalart(id) {
+      const item = state.mandalarts.find(m => m.id === id);
+      if (!item) return;
+      item.collapsed = !item.collapsed;
+      saveState();
+      renderGoals();
+    }
+
     function addRoutine() {
       const title = document.getElementById('routineTitle').value.trim();
       if (!title) return;
@@ -1045,6 +1263,74 @@
       const monthly = state.goals.filter(g => g.type === 'monthly');
       renderGoalGroup(document.getElementById('weeklyGoalList'), weekly);
       renderGoalGroup(document.getElementById('monthlyGoalList'), monthly);
+      renderMandalarts();
+    }
+
+
+
+    function getMandalartTodoCandidates() {
+      const activeTasks = state.tasks.filter(task => task.status !== 'done');
+      const selected = [];
+      const rest = [];
+      activeTasks.forEach(task => {
+        if (task.dueDate === state.ui.selectedDate) selected.push(task);
+        else rest.push(task);
+      });
+      return [...selected, ...rest];
+    }
+
+    function renderMandalarts() {
+      const list = document.getElementById('mandalartList');
+      list.innerHTML = '';
+      if (!state.mandalarts.length) {
+        list.innerHTML = '<div class="meta">복구된 만다라트가 없습니다</div>';
+        return;
+      }
+
+      const positions = ['좌상', '상', '우상', '좌', '중앙', '우', '좌하', '하', '우하'];
+      state.mandalarts
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .forEach(item => {
+          const block = document.createElement('div');
+          block.className = 'item';
+          block.style.display = 'block';
+
+          const board = item.collapsed
+            ? ''
+            : `<div class="mandalart-board-wrap"><div class="mandalart-board">${item.cells.map((cell, idx) => `
+                <div class="mandalart-cell ${idx === 4 ? 'center' : ''}">
+                  <div class="cell-label">${positions[idx]}</div>
+                  <textarea class="cell-input" id="mandalart-cell-${item.id}-${idx}" placeholder="세부 목표 입력">${escapeHtml(cell.text)}</textarea>
+                  <select class="cell-link" id="mandalart-goal-${item.id}-${idx}">
+                    <option value="">목표 연결 안 함</option>
+                    ${state.goals.map(g => `<option value="${g.id}" ${cell.linkedGoalId === g.id ? 'selected' : ''}>${escapeHtml(g.title)}</option>`).join('')}
+                  </select>
+                  <select class="cell-link" id="mandalart-todo-${item.id}-${idx}">
+                    <option value="">할일 연결 안 함</option>
+                    ${getMandalartTodoCandidates().map(t => `<option value="${t.id}" ${cell.linkedTodoIds?.[0] === t.id ? 'selected' : ''}>${escapeHtml(t.title)} (${t.dueDate})</option>`).join('')}
+                  </select>
+                </div>
+              `).join('')}</div></div>`;
+
+          block.innerHTML = `
+            <div class="row" style="margin-bottom:8px;">
+              <strong>${escapeHtml(item.title)}</strong>
+              <span class="tiny">${item.dueDate || '마감일 없음'}</span>
+            </div>
+            <div class="goal-grid" style="margin-bottom:8px;">
+              <input id="mandalart-title-${item.id}" value="${escapeHtml(item.title)}" maxlength="120" />
+              <input id="mandalart-due-${item.id}" type="date" value="${item.dueDate || ''}" />
+            </div>
+            ${board}
+            <div class="row" style="margin-top:8px; justify-content:flex-end;">
+              <button data-action="toggle-mandalart" data-id="${item.id}">${item.collapsed ? '펼치기' : '접기'}</button>
+              <button data-action="save-mandalart" data-id="${item.id}">수정 저장</button>
+              <button data-action="delete-mandalart" data-id="${item.id}">삭제</button>
+            </div>
+          `;
+          list.appendChild(block);
+        });
     }
 
     function renderRoutine() {
@@ -1278,6 +1564,9 @@
         if (select) linkTaskToGoal(id, select.value);
       }
       if (action === 'select-date') setSelectedDate(actionEl.dataset.date);
+      if (action === 'save-mandalart') saveMandalart(id);
+      if (action === 'delete-mandalart') removeMandalart(id);
+      if (action === 'toggle-mandalart') toggleMandalart(id);
     });
 
     document.getElementById('addTaskBtn').addEventListener('click', addTask);
@@ -1309,6 +1598,7 @@
     });
 
     document.getElementById('addGoalBtn').addEventListener('click', addGoal);
+    document.getElementById('addMandalartBtn').addEventListener('click', addMandalart);
     document.getElementById('addRoutineBtn').addEventListener('click', addRoutine);
     document.getElementById('routineTitle').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addRoutine();
