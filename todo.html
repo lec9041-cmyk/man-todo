@@ -8,10 +8,10 @@
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
 :root{
-  --bg:#0d0f14;--s1:#161920;--s2:#1e2130;--s3:#252840;
-  --b:rgba(255,255,255,.07);
-  --ink:#f0f2ff;--ink2:#9da3c4;--ink3:#5c6080;
-  --brand:#6c8eff;--brand-d:rgba(108,142,255,.15);
+  --bg:#f4f7fb;--s1:#ffffff;--s2:#f2f5fa;--s3:#dfe6ef;
+  --b:rgba(15,23,42,.1);
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;
+  --brand:#4f46e5;--brand-d:rgba(79,70,229,.12);
   --green:#34d399;--green-d:rgba(52,211,153,.13);
   --red:#f87171;--red-d:rgba(248,113,113,.13);
   --yellow:#fbbf24;--yellow-d:rgba(251,191,36,.13);
@@ -47,12 +47,13 @@ html,body{margin:0;padding:0;height:100%;overflow:hidden;background:var(--bg);co
 
 /* ── 바텀탭 */
 .tabbar{position:absolute;bottom:0;left:0;right:0;height:calc(var(--tab-h) + var(--safe-b));padding-bottom:var(--safe-b);
-  background:rgba(13,15,20,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  background:rgba(255,255,255,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   border-top:1px solid var(--b);display:flex;align-items:flex-start;justify-content:space-around;padding-top:6px;z-index:100}
-.tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:10px}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 14px;border-radius:10px;color:var(--ink3)}
 .tab:active{background:var(--s2)}
-.tab-icon{font-size:22px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
-.tab.active .tab-icon{transform:scale(1.18) translateY(-1px)}
+.tab-icon{font-size:22px;line-height:1;transition:transform .2s cubic-bezier(.34,1.56,.64,1),color .2s;color:var(--ink3)}
+.tab.active{color:var(--brand)}
+.tab.active .tab-icon{transform:scale(1.18) translateY(-1px);color:var(--brand)}
 .tab-dot{width:4px;height:4px;border-radius:50%;background:transparent;transition:background .15s}
 .tab.active .tab-dot{background:var(--brand)}
 .tab[data-tab=routine].active .tab-dot{background:var(--orange)}
