@@ -9,14 +9,14 @@
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ reply: '', message: 'POST only' });
+    return res.status(405).json({ reply: '', error: 'POST only', message: 'POST only' });
   }
 
   const body = typeof req.body === 'string' ? safeJson(req.body) : req.body;
-  if (!body) return res.status(400).json({ reply: '', message: 'Invalid body' });
+  if (!body) return res.status(400).json({ reply: '', error: 'Invalid body', message: 'Invalid body' });
 
   const { mode, payload } = body;
-  if (!payload) return res.status(400).json({ reply: '', message: 'Missing payload' });
+  if (!payload) return res.status(400).json({ reply: '', error: 'Missing payload', message: 'Missing payload' });
 
   const provider = (process.env.AI_PROVIDER || 'claude').toLowerCase();
 
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ reply, message: 'OK' });
   } catch (err) {
     const msg = err?.name === 'AbortError' ? 'AI 요청 시간 초과' : `AI 오류: ${String(err).slice(0, 200)}`;
-    return res.status(500).json({ reply: '', message: msg });
+    return res.status(500).json({ reply: '', error: msg, message: msg });
   }
 }
 
