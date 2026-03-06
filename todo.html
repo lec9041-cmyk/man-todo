@@ -616,6 +616,11 @@ document.getElementById('tText').addEventListener('keydown',e=>{if(e.key==='Ente
 function addTodo(){
   const text=document.getElementById('tText').value.trim();
   if(!text){document.getElementById('tText').focus();return;}
+  const normalized=text.toLowerCase();
+  if(S.todo.items.some(i=>String(i.text||'').trim().toLowerCase()===normalized)){
+    alert('같은 할일이 이미 있어요.');
+    return;
+  }
   S.todo.items.unshift({
     id:uuid(),text,
     dueDate:document.getElementById('tDue').value||null,
@@ -1243,7 +1248,10 @@ async function sendAi(){
     const res=await fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({mode:aiSt.mode,payload:{message:msg,systemPrompt:sys,history:aiSt.history.slice(0,-1)}})});
     typ.remove();
-    if(!res.ok){const e=await res.json().catch(()=>({error:res.statusText}));throw new Error(e.error||`오류 ${res.status}`);}
+    if(!res.ok){
+      const e=await res.json().catch(()=>({error:res.statusText}));
+      throw new Error(e.error||e.message||`오류 ${res.status}`);
+    }
     const data=await res.json();const reply=data.reply||'응답 없음';
     aiSt.history.push({role:'assistant',content:reply});appendAiMsg('assistant',reply);
   }catch(e){typ.remove();const el=mk('div','');el.style.cssText='background:var(--red-d);color:var(--red);border-radius:10px;padding:9px 12px;font-size:13px;margin:0 0 4px';el.textContent=`오류: ${e.message}`;document.getElementById('aiMsgs').append(el);aiSt.history.pop();}
@@ -1327,7 +1335,10 @@ function normRoutines(v){
    유틸
 ═══════════════════════════════════════════════════════ */
 function mk(tag,cls){const el=document.createElement(tag);if(cls)el.className=cls;return el;}
-function uuid(){return crypto.randomUUID();}
+function uuid(){
+  if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();
+  return `id-${Date.now()}-${Math.random().toString(16).slice(2,10)}`;
+}
 function esc(v){return v.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');}
 function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('ko-KR',{month:'short',day:'numeric'});}
 
@@ -1335,17 +1346,17 @@ function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateSt
    초기화
 ═══════════════════════════════════════════════════════ */
 // 모든 render 함수 뒤에 lucide 아이콘 초기화 자동 실행
-const _origRenderTodo    = renderTodo;
-const _origRenderGoals   = renderGoals;
-const _origRenderGoalSum = renderGoalSummary;
-const _origRenderRoutine = renderRoutine;
-const _origRenderCal     = renderCalendar;
+const withIconRefresh=fn=>function(...args){
+  const out=fn.apply(this,args);
+  lucide.createIcons();
+  return out;
+};
 
-function renderTodo()         { _origRenderTodo();    lucide.createIcons(); }
-function renderGoals()        { _origRenderGoals();   lucide.createIcons(); }
-function renderGoalSummary()  { _origRenderGoalSum(); lucide.createIcons(); }
-function renderRoutine()      { _origRenderRoutine(); lucide.createIcons(); }
-function renderCalendar()     { _origRenderCal();     lucide.createIcons(); }
+renderTodo=withIconRefresh(renderTodo);
+renderGoals=withIconRefresh(renderGoals);
+renderGoalSummary=withIconRefresh(renderGoalSummary);
+renderRoutine=withIconRefresh(renderRoutine);
+renderCalendar=withIconRefresh(renderCalendar);
 
 renderTodo();
 renderGoalSummary();
